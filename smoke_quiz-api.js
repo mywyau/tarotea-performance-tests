@@ -93,7 +93,7 @@ export default function () {
     return;
   }
 
-  // sleep(thinkTimeSeconds(10, 20));
+  sleep(thinkTimeSeconds(10, 20));
 
   group('finalize quiz', () => {
     const payload = {

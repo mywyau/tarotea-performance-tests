@@ -1,7 +1,7 @@
-import http from 'k6/http';
 import { check, group, sleep } from 'k6';
-import { Trend } from 'k6/metrics';
 import { SharedArray } from 'k6/data';
+import http from 'k6/http';
+import { Trend } from 'k6/metrics';
 
 const BASE_URL = __ENV.BASE_URL || 'https://www.tarotea.dev';
 const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-one';
@@ -26,9 +26,10 @@ export const options = {
       startVUs: 1,
       stages: [
         { duration: '15s', target: 20 },
-        { duration: '15s', target: 40 },
-        { duration: '2m', target: 100 },
-        { duration: '15s', target: 0 },
+        { duration: '30s', target: 40 },
+        { duration: '1m', target: 100 },
+        { duration: '30s', target: 40 },
+        { duration: '15s', target: 20 },
       ],
       gracefulRampDown: '15s',
     },
@@ -92,7 +93,7 @@ export default function () {
     return;
   }
 
-  // sleep(thinkTimeSeconds(10, 20));
+  sleep(thinkTimeSeconds(10, 20));
 
   group('finalize quiz', () => {
     const payload = {
