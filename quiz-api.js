@@ -17,19 +17,9 @@ function thinkTimeSeconds(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+// ++++++++++++++++++++++++++++++
 
-export const options = {
-  scenarios: {
-    quiz_journey: {
-      executor: 'ramping-vus',
-      startVUs: 1,
-      stages: [
-        { duration: '1m', target: 20 },
-      ],
-      gracefulRampDown: '15s',
-    },
-  },
-};
+//Note: smoke tests
 
 // export const options = {
 //   scenarios: {
@@ -38,14 +28,29 @@ export const options = {
 //       startVUs: 1,
 //       stages: [
 //         { duration: '1m', target: 20 },
-//         { duration: '1m', target: 40 },
-//         { duration: '1m', target: 100 },
-//         { duration: '1m', target: 0 },
 //       ],
 //       gracefulRampDown: '15s',
 //     },
 //   },
 // };
+
+// ++++++++++++++++++++++++++++++
+
+export const options = {
+  scenarios: {
+    quiz_journey: {
+      executor: 'ramping-vus',
+      startVUs: 1,
+      stages: [
+        { duration: '1m', target: 20 },
+        { duration: '1m', target: 40 },
+        // { duration: '1m', target: 100 },
+        { duration: '1m', target: 0 },
+      ],
+      gracefulRampDown: '15s',
+    },
+  },
+};
 
 function buildHeaders() {
   const token = tokens[(__VU - 1) % tokens.length];
