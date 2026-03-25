@@ -19,21 +19,22 @@ function thinkTimeSeconds(min, max) {
 
 // ++++++++++++++++++++++++++++++
 
+//Note: smoke tests
+
 export const options = {
   scenarios: {
     quiz_journey: {
       executor: 'ramping-vus',
       startVUs: 1,
       stages: [
-        { duration: '15s', target: 20 },
-        { duration: '15s', target: 40 },
-        { duration: '2m', target: 100 },
-        { duration: '15s', target: 0 },
+        { duration: '1m', target: 20 },
       ],
       gracefulRampDown: '15s',
     },
   },
 };
+
+// ++++++++++++++++++++++++++++++
 
 function buildHeaders() {
   const token = tokens[(__VU - 1) % tokens.length];
