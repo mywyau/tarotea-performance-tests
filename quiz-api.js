@@ -17,8 +17,6 @@ function thinkTimeSeconds(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-// ++++++++++++++++++++++++++++++
-
 export const options = {
   scenarios: {
     quiz_journey: {
@@ -34,6 +32,37 @@ export const options = {
       gracefulRampDown: '15s',
     },
   },
+
+  thresholds: {
+    // Global built-in HTTP request latency across all requests
+    http_req_duration: [
+      'p(95)<1500',
+      'p(99)<3000',
+    ],
+
+    // Global error rate
+    http_req_failed: [
+      'rate<0.01', // less than 1% failed requests
+    ],
+
+    // Custom checks pass rate
+    checks: [
+      'rate>0.99', // more than 99% of checks should pass
+    ],
+
+    // Custom trend metrics
+    quiz_load_duration: [
+      'p(95)<800',
+      'p(99)<1000',
+    ],
+    quiz_finalize_duration: [
+      'p(95)<1000',
+      'p(99)<1500',
+    ],
+  },
+
+  // So p95/p99 show clearly in end-of-test summary output
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
 
 function buildHeaders() {
@@ -59,12 +88,28 @@ function getWordId(item) {
   return item?.id || item?.wordId || item?.sourceWordId || null;
 }
 
+function levelQuizRequest(headers) {
+  return http.get(
+    `${BASE_URL}/api/vocab-quiz/${LEVEL_SLUG}`,
+    { headers }
+  );
+}
+
+function finalizeLevelQuiz(headers, payload) {
+  return http.post(
+    `${BASE_URL}/api/quiz/grind/finalize`,
+    JSON.stringify(payload),
+    { headers }
+  );
+}
+
 export default function () {
   const headers = buildHeaders();
   let selectedWordIds = [];
 
   group('load quiz', () => {
-    const quizRes = http.get(`${BASE_URL}/api/vocab-quiz/${LEVEL_SLUG}`, { headers });
+    const quizRes = levelQuizRequest(headers);
+
     quizLoadDuration.add(quizRes.timings.duration);
 
     check(quizRes, {
@@ -93,6 +138,7 @@ export default function () {
     return;
   }
 
+  // pretend thinking/quiz completion
   sleep(thinkTimeSeconds(10, 20));
 
   group('finalize quiz', () => {
@@ -104,11 +150,7 @@ export default function () {
       })),
     };
 
-    const finalizeRes = http.post(
-      `${BASE_URL}/api/quiz/grind/finalize`,
-      JSON.stringify(payload),
-      { headers }
-    );
+    const finalizeRes = finalizeLevelQuiz(headers, payload);
 
     quizFinalizeDuration.add(finalizeRes.timings.duration);
 
