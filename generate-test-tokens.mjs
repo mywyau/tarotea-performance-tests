@@ -1,6 +1,5 @@
 // generate-test-tokens.mjs
 import fs from 'node:fs/promises';
-
 import { loadEnvFile } from 'node:process';
 
 loadEnvFile();
@@ -56,7 +55,6 @@ async function createUser(mgmtToken, email, password) {
   });
 
   if (res.status === 409) {
-    // user already exists; look them up
     const lookup = await fetch(
       `https://${AUTH0_DOMAIN}/api/v2/users-by-email?email=${encodeURIComponent(email)}`,
       {
@@ -93,20 +91,6 @@ async function createUser(mgmtToken, email, password) {
   };
 }
 
-async function bootstrapAppUser(sub, email) {
-  const res = await fetch(`${APP_BASE_URL}/api/auth/post-login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sub, email }),
-  });
-
-  if (!res.ok) {
-    throw new Error(`post-login failed: ${res.status} ${await res.text()}`);
-  }
-
-  return res.json();
-}
-
 async function getUserAccessToken(username, password) {
   const res = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
     method: 'POST',
@@ -131,6 +115,23 @@ async function getUserAccessToken(username, password) {
   return json.access_token;
 }
 
+async function bootstrapAppUser(accessToken, email) {
+  const res = await fetch(`${APP_BASE_URL}/api/auth/post-login`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`post-login failed: ${res.status} ${await res.text()}`);
+  }
+
+  return res.json();
+}
+
 async function main() {
   const mgmtToken = await getManagementToken();
   const tokens = [];
@@ -140,9 +141,11 @@ async function main() {
     const password = `PerfTest!${i}Abc123`;
 
     const user = await createUser(mgmtToken, email, password);
-    await bootstrapAppUser(user.sub, user.email);
 
     const token = await getUserAccessToken(email, password);
+
+    await bootstrapAppUser(token, user.email);
+
     tokens.push(token);
 
     console.log(`bootstrapped ${email}`);

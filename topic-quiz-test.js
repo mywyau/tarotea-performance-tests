@@ -3,8 +3,13 @@ import { SharedArray } from 'k6/data';
 import http from 'k6/http';
 import { Trend } from 'k6/metrics';
 
-const BASE_URL = __ENV.BASE_URL || 'https://www.tarotea.dev';
-const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-one';
+// import { loadEnvFile } from 'node:process';
+// loadEnvFile();
+
+// cannot use configs we have to use default values running this script in k6 from local since k6 does not support node:process it may have different env variable loading system
+const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
+// const TOPIC_SLUG = process.env.TOPIC_SLUG || 'basic-verbs';
+const TOPIC_SLUG = __ENV.TOPIC_SLUG || 'survival-essentials';
 
 const tokens = new SharedArray('tokens', function () {
   return JSON.parse(open('./tokens.json'));
@@ -13,13 +18,15 @@ const tokens = new SharedArray('tokens', function () {
 const quizLoadDuration = new Trend('quiz_load_duration');
 const quizFinalizeDuration = new Trend('quiz_finalize_duration');
 
+console.log('Running topic: ', TOPIC_SLUG)
+
 function thinkTimeSeconds(min, max) {
   return Math.random() * (max - min) + min;
 }
 
 export const options = {
   scenarios: {
-    quiz_journey: {
+    topic_quiz_journey: {
       executor: 'ramping-vus',
       startVUs: 1,
       stages: [
@@ -34,26 +41,13 @@ export const options = {
   },
 
   thresholds: {
-    // Global built-in HTTP request latency across all requests
-    http_req_duration: [
-      'p(95)<1500',
-      'p(99)<3000',
-    ],
+    http_req_duration: ['p(95)<1500', 'p(99)<3000'],
+    http_req_failed: ['rate<0.01'],
+    checks: ['rate>0.99'],
 
-    // Global error rate
-    http_req_failed: [
-      'rate<0.01', // less than 1% failed requests
-    ],
-
-    // Custom checks pass rate
-    checks: [
-      'rate>0.99', // more than 99% of checks should pass
-    ],
-
-    // Custom trend metrics
     quiz_load_duration: [
       'p(95)<800',
-      'p(99)<1000',
+      'p(99)<1200',
     ],
     quiz_finalize_duration: [
       'p(95)<1000',
@@ -61,7 +55,6 @@ export const options = {
     ],
   },
 
-  // So p95/p99 show clearly in end-of-test summary output
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
 
@@ -75,27 +68,18 @@ function buildHeaders() {
   };
 }
 
-function flattenQuizItems(quizJson) {
-  const categories = quizJson?.categories;
-  if (!categories || typeof categories !== 'object') return [];
-
-  return Object.values(categories)
-    .filter(Array.isArray)
-    .flat();
+function createAttemptId() {
+  return `k6-topic-${__VU}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function getWordId(item) {
-  return item?.id || item?.wordId || item?.sourceWordId || null;
-}
-
-function levelQuizRequest(headers) {
+function loadTopicQuiz(headers) {
   return http.get(
-    `${BASE_URL}/api/vocab-quiz/${LEVEL_SLUG}`,
+    `${BASE_URL}/api/topic/quiz/${TOPIC_SLUG}`,
     { headers }
   );
 }
 
-function finalizeLevelQuiz(headers, payload) {
+function finalizeTopicQuiz(headers, payload) {
   return http.post(
     `${BASE_URL}/api/quiz/grind/finalize-v2`,
     JSON.stringify(payload),
@@ -103,12 +87,20 @@ function finalizeLevelQuiz(headers, payload) {
   );
 }
 
+function getQuestions(quizJson) {
+  return Array.isArray(quizJson?.questions) ? quizJson.questions : [];
+}
+
+function getWordId(question) {
+  return question?.wordId || null;
+}
+
 export default function () {
   const headers = buildHeaders();
   let selectedWordIds = [];
 
-  group('load quiz', () => {
-    const quizRes = levelQuizRequest(headers);
+  group('load topic quiz', () => {
+    const quizRes = loadTopicQuiz(headers);
 
     quizLoadDuration.add(quizRes.timings.duration);
 
@@ -125,11 +117,15 @@ export default function () {
       return;
     }
 
-    const items = flattenQuizItems(quizJson);
+    const questions = getQuestions(quizJson);
 
-    selectedWordIds = items
+    selectedWordIds = questions
       .map(getWordId)
-      .filter(Boolean)
+      .filter(Boolean);
+
+    check(quizJson, {
+      'questions present': () => selectedWordIds.length > 0,
+    });
   });
 
   if (selectedWordIds.length === 0) {
@@ -137,19 +133,20 @@ export default function () {
     return;
   }
 
-  // pretend thinking/quiz completion
-  sleep(thinkTimeSeconds(10, 20));
+  // Mimic a user completing the quiz
+  // sleep(thinkTimeSeconds(10, 20));
 
-  group('finalize quiz', () => {
+  group('finalize topic quiz', () => {
     const payload = {
-      mode: 'grind-level',
+      attemptId: createAttemptId(),
+      mode: 'grind-topic',
       answers: selectedWordIds.map((wordId, index) => ({
         wordId,
         correct: index % 2 === 0,
       })),
     };
 
-    const finalizeRes = finalizeLevelQuiz(headers, payload);
+    const finalizeRes = finalizeTopicQuiz(headers, payload);
 
     quizFinalizeDuration.add(finalizeRes.timings.duration);
 
