@@ -17,19 +17,68 @@ const TEST_APP_CLIENT_SECRET = process.env.AUTH0_TEST_APP_CLIENT_SECRET;
 const AUTH0_DB_CONNECTION = process.env.AUTH0_DB_CONNECTION;
 const APP_BASE_URL = process.env.APP_BASE_URL;
 
-const USER_COUNT = Number(process.env.USER_COUNT || 20);
+const USER_COUNT = Number(process.env.USER_COUNT || 100);
+
+// Delay between each full user bootstrap
+const USER_DELAY_MS = Number(process.env.USER_DELAY_MS || 750);
+
+// Retry settings for Auth0/API rate limiting
+const MAX_RETRIES = Number(process.env.MAX_RETRIES || 5);
+const BASE_BACKOFF_MS = Number(process.env.BASE_BACKOFF_MS || 1000);
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getRetryDelayMs(res, attempt) {
+  const retryAfter = res.headers.get('retry-after');
+
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (!Number.isNaN(seconds)) {
+      return seconds * 1000;
+    }
+  }
+
+  // exponential backoff: 1000, 2000, 4000, ...
+  return BASE_BACKOFF_MS * 2 ** attempt;
+}
+
+async function fetchWithRateLimitRetry(url, options, label = 'request') {
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const res = await fetch(url, options);
+
+    if (res.status !== 429) {
+      return res;
+    }
+
+    if (attempt === MAX_RETRIES) {
+      throw new Error(`${label} failed: hit rate limit too many times`);
+    }
+
+    const delayMs = getRetryDelayMs(res, attempt);
+    console.warn(`${label} rate limited (429). Retrying in ${delayMs}ms...`);
+    await sleep(delayMs);
+  }
+
+  throw new Error(`${label} failed unexpectedly`);
+}
 
 async function getManagementToken() {
-  const res = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      client_id: MGMT_CLIENT_ID,
-      client_secret: MGMT_CLIENT_SECRET,
-      audience: `https://${AUTH0_DOMAIN}/api/v2/`,
-      grant_type: 'client_credentials',
-    }),
-  });
+  const res = await fetchWithRateLimitRetry(
+    `https://${AUTH0_DOMAIN}/oauth/token`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_id: MGMT_CLIENT_ID,
+        client_secret: MGMT_CLIENT_SECRET,
+        audience: `https://${AUTH0_DOMAIN}/api/v2/`,
+        grant_type: 'client_credentials',
+      }),
+    },
+    'Mgmt token'
+  );
 
   if (!res.ok) {
     throw new Error(`Mgmt token failed: ${res.status} ${await res.text()}`);
@@ -40,28 +89,33 @@ async function getManagementToken() {
 }
 
 async function createUser(mgmtToken, email, password) {
-  const res = await fetch(`https://${AUTH0_DOMAIN}/api/v2/users`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${mgmtToken}`,
+  const res = await fetchWithRateLimitRetry(
+    `https://${AUTH0_DOMAIN}/api/v2/users`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${mgmtToken}`,
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        connection: AUTH0_DB_CONNECTION,
+        email_verified: true,
+      }),
     },
-    body: JSON.stringify({
-      email,
-      password,
-      connection: AUTH0_DB_CONNECTION,
-      email_verified: true,
-    }),
-  });
+    `Create user ${email}`
+  );
 
   if (res.status === 409) {
-    const lookup = await fetch(
+    const lookup = await fetchWithRateLimitRetry(
       `https://${AUTH0_DOMAIN}/api/v2/users-by-email?email=${encodeURIComponent(email)}`,
       {
         headers: {
           Authorization: `Bearer ${mgmtToken}`,
         },
-      }
+      },
+      `Lookup user ${email}`
     );
 
     if (!lookup.ok) {
@@ -92,20 +146,24 @@ async function createUser(mgmtToken, email, password) {
 }
 
 async function getUserAccessToken(username, password) {
-  const res = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      grant_type: 'http://auth0.com/oauth/grant-type/password-realm',
-      username,
-      password,
-      audience: API_AUDIENCE,
-      scope: 'openid profile email',
-      realm: AUTH0_DB_CONNECTION,
-      client_id: TEST_APP_CLIENT_ID,
-      client_secret: TEST_APP_CLIENT_SECRET,
-    }),
-  });
+  const res = await fetchWithRateLimitRetry(
+    `https://${AUTH0_DOMAIN}/oauth/token`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        grant_type: 'http://auth0.com/oauth/grant-type/password-realm',
+        username,
+        password,
+        audience: API_AUDIENCE,
+        scope: 'openid profile email',
+        realm: AUTH0_DB_CONNECTION,
+        client_id: TEST_APP_CLIENT_ID,
+        client_secret: TEST_APP_CLIENT_SECRET,
+      }),
+    },
+    `User token ${username}`
+  );
 
   if (!res.ok) {
     throw new Error(`User token failed: ${res.status} ${await res.text()}`);
@@ -116,14 +174,18 @@ async function getUserAccessToken(username, password) {
 }
 
 async function bootstrapAppUser(accessToken, email) {
-  const res = await fetch(`${APP_BASE_URL}/api/auth/post-login`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
+  const res = await fetchWithRateLimitRetry(
+    `${APP_BASE_URL}/api/auth/post-login`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
     },
-    body: JSON.stringify({ email }),
-  });
+    `post-login ${email}`
+  );
 
   if (!res.ok) {
     throw new Error(`post-login failed: ${res.status} ${await res.text()}`);
@@ -141,14 +203,15 @@ async function main() {
     const password = `PerfTest!${i}Abc123`;
 
     const user = await createUser(mgmtToken, email, password);
-
     const token = await getUserAccessToken(email, password);
-
     await bootstrapAppUser(token, user.email);
 
     tokens.push(token);
-
     console.log(`bootstrapped ${email}`);
+
+    if (i < USER_COUNT) {
+      await sleep(USER_DELAY_MS);
+    }
   }
 
   await fs.writeFile('./tokens.json', JSON.stringify(tokens, null, 2));

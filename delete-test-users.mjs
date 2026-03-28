@@ -8,7 +8,7 @@ loadEnvFile();
 const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
 const MGMT_CLIENT_ID = process.env.AUTH0_MGMT_CLIENT_ID;
 const MGMT_CLIENT_SECRET = process.env.AUTH0_MGMT_CLIENT_SECRET;
-const USER_COUNT = Number(process.env.USER_COUNT || 20);
+const USER_COUNT = Number(process.env.USER_COUNT || 100);
 
 async function getManagementToken() {
   const res = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {
@@ -36,8 +36,8 @@ function computeRateLimitDelayMs(res, attempt) {
   if (resetHeader) {
     const resetSeconds = Number(resetHeader);
     if (!Number.isNaN(resetSeconds)) {
-      const delayMs = resetSeconds * 1000 - Date.now() + 250;
-      return Math.max(delayMs, 1000);
+      const delayMs = resetSeconds * 1000 - Date.now() + 500;
+      return Math.max(delayMs, 1500);
     }
   }
 
@@ -57,9 +57,9 @@ async function fetchWith429Retry(url, options, label, maxRetries = 6) {
       throw new Error(`${label} failed after retries: 429 ${await res.text()}`);
     }
 
-    const waitMs = computeRateLimitDelayMs(res, attempt);
+    // const waitMs = computeRateLimitDelayMs(res, attempt);
     console.log(`${label}: hit 429, waiting ${waitMs}ms before retry...`);
-    await sleep(waitMs);
+    await sleep(1500);
   }
 
   throw new Error(`${label}: unexpected retry failure`);
