@@ -85,7 +85,7 @@ function getWordId(question) {
 
 export const options = {
   scenarios: {
-    topic_quiz_burst_1000: {
+    topic_quiz_burst_100: {
       executor: 'ramping-vus',
       startVUs: 1,
       stages: [
