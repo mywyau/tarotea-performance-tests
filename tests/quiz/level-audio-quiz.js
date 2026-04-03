@@ -122,7 +122,7 @@ export default function () {
   });
 
   if (selectedWordIds.length === 0) {
-    sleep(randomBetween(2, 8));
+    sleep(randomBetween(0.1, 0.2));
     return;
   }
 
@@ -139,7 +139,7 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(20, 60));
+  sleep(randomBetween(10, 20));
 
   group('finalize level audio quiz', () => {
     const payload = {
@@ -164,5 +164,5 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(5, 15));
+  sleep(randomBetween(2, 5));
 }
