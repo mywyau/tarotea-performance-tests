@@ -50,9 +50,10 @@ export const options = {
       startVUs: 1,
       stages: [
         { duration: '30s', target: 25 },
-        { duration: '1m', target: 75 },
-        { duration: '1m', target: 75 },
-        { duration: '1m', target: 0 },
+        { duration: '30s', target: 50 },
+        { duration: '30s', target: 100 },
+        { duration: '30s', target: 100 },
+        { duration: '30s', target: 0 },
       ],
       gracefulRampDown: '30s',
     },
@@ -139,7 +140,7 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(10, 20));
+  sleep(randomBetween(5, 10));
 
   group('finalize level audio quiz', () => {
     const payload = {
@@ -164,5 +165,5 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(2, 5));
+  sleep(randomBetween(1, 3));
 }
