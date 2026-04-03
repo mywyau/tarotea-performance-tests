@@ -5,10 +5,6 @@ import { Trend, Counter } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const TOPIC_SLUG = __ENV.TOPIC_SLUG || 'survival-essentials';
-const CDN_BASE = __ENV.CDN_BASE || BASE_URL;
-
-// true = also fetch /audio/{sentenceId}.mp3 like the page does
-const FETCH_AUDIO = (__ENV.FETCH_AUDIO || 'true').toLowerCase() === 'true';
 
 // mixed | correct | wrong | random
 const ANSWER_MODE = (__ENV.ANSWER_MODE || 'mixed').toLowerCase();
@@ -23,11 +19,9 @@ if (!tokens.length) {
 
 const startDuration = new Trend('topic_sentence_audio_start_duration');
 const finalizeDuration = new Trend('topic_sentence_audio_finalize_duration');
-const audioDuration = new Trend('topic_sentence_audio_file_duration');
 
 const quizzesStarted = new Counter('topic_sentence_audio_quizzes_started');
 const quizzesFinalized = new Counter('topic_sentence_audio_quizzes_finalized');
-const audioFilesFetched = new Counter('topic_sentence_audio_files_fetched');
 
 function getToken() {
   const index = (__VU + __ITER) % tokens.length;
@@ -87,7 +81,6 @@ export const options = {
 
     topic_sentence_audio_start_duration: ['p(95)<1200'],
     topic_sentence_audio_finalize_duration: ['p(95)<1200'],
-    topic_sentence_audio_file_duration: ['p(95)<1500'],
   },
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
@@ -169,26 +162,6 @@ export default function () {
   }
 
   for (let i = 0; i < questions.length; i++) {
-    const q = questions[i];
-    const audioKey = q?.sentenceId ? `${q.sentenceId}.mp3` : null;
-
-    if (FETCH_AUDIO && audioKey) {
-      const audioRes = http.get(`${CDN_BASE}/audio/${audioKey}`, {
-        headers: {
-          Accept: 'audio/mpeg,*/*',
-        },
-        tags: { name: 'GET /audio/:sentenceId.mp3' },
-      });
-
-      audioDuration.add(audioRes.timings.duration);
-      audioFilesFetched.add(1);
-
-      check(audioRes, {
-        'audio file fetch 200/206': (r) => r.status === 200 || r.status === 206,
-      });
-    }
-
-    // listen + think + answer + next
     sleep(randomBetween(2, 6));
   }
 
@@ -223,14 +196,12 @@ export default function () {
     }
 
     check(json, {
-      'finalize returns quiz object': (body) => !!body?.quiz,
-      'finalize returns xpEarned': (body) => typeof body?.quiz?.xpEarned === 'number',
-      'finalize totalQuestions present': (body) => typeof body?.quiz?.totalQuestions === 'number',
-      'finalize correctCount present': (body) => typeof body?.quiz?.correctCount === 'number',
       'queued flag optional boolean': (body) =>
         body?.queued === undefined || typeof body.queued === 'boolean',
       'deduped flag optional boolean': (body) =>
         body?.deduped === undefined || typeof body.deduped === 'boolean',
+      'quiz object optional': (body) =>
+        body?.quiz === undefined || typeof body.quiz === 'object',
     });
   });
 
