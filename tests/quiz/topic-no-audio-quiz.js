@@ -89,7 +89,7 @@ export const options = {
     checks: ['rate>0.99'],
 
     'http_req_duration{name:GET /api/topic/quiz/:topicSlug}': ['p(95)<1200'],
-    'http_req_duration{name:POST /api/quiz/grind/finalize-v2}': ['p(95)<1200'],
+    'http_req_duration{name:POST /api/quiz/grind/finalize-v4}': ['p(95)<1200'],
 
     topic_word_quiz_load_duration: ['p(95)<1200'],
     topic_word_quiz_finalize_duration: ['p(95)<1200'],
@@ -205,7 +205,7 @@ export default function () {
 
   group('finalize topic word quiz', () => {
     const res = http.post(
-      `${BASE_URL}/api/quiz/grind/finalize-v2`,
+      `${BASE_URL}/api/quiz/grind/finalize-v4`,
       JSON.stringify({
         attemptId,
         mode: 'grind-topic',
@@ -213,7 +213,7 @@ export default function () {
       }),
       {
         headers,
-        tags: { name: 'POST /api/quiz/grind/finalize-v2' },
+        tags: { name: 'POST /api/quiz/grind/finalize-v4' },
       }
     );
 
