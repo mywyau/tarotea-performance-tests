@@ -63,9 +63,9 @@ export const options = {
     checks: ['rate>0.99'],
 
     'http_req_duration{name:GET /api/vocab-quiz/:slug}': ['p(95)<1000'],
-    'http_req_duration{name:GET /api/word-progress/weakestV2}': ['p(95)<1000'],
-    'http_req_duration{name:GET /api/word-progress/v2}': ['p(95)<1200'],
-    'http_req_duration{name:POST /api/quiz/grind/finalize-v2}': ['p(95)<1200'],
+    'http_req_duration{name:GET /api/word-progress/weakestV3}': ['p(95)<1000'],
+    'http_req_duration{name:GET /api/word-progress/v3}': ['p(95)<1200'],
+    'http_req_duration{name:POST /api/quiz/grind/finalize-v4}': ['p(95)<1200'],
   },
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
@@ -86,9 +86,9 @@ export default function () {
       ],
       [
         'GET',
-        `${BASE_URL}/api/word-progress/weakestV2?level=${encodeURIComponent(LEVEL_SLUG)}`,
+        `${BASE_URL}/api/word-progress/weakestV3?level=${encodeURIComponent(LEVEL_SLUG)}`,
         null,
-        { headers, tags: { name: 'GET /api/word-progress/weakestV2' } },
+        { headers, tags: { name: 'GET /api/word-progress/weakestV3' } },
       ],
     ]);
 
@@ -128,8 +128,8 @@ export default function () {
 
   group('fetch selected word progress', () => {
     const res = http.get(
-      `${BASE_URL}/api/word-progress/v2?wordIds=${encodeURIComponent(selectedWordIds.join(','))}`,
-      { headers, tags: { name: 'GET /api/word-progress/v2' } }
+      `${BASE_URL}/api/word-progress/v3?wordIds=${encodeURIComponent(selectedWordIds.join(','))}`,
+      { headers, tags: { name: 'GET /api/word-progress/v3' } }
     );
 
     progressFetchDuration.add(res.timings.duration);
@@ -152,9 +152,9 @@ export default function () {
     };
 
     const res = http.post(
-      `${BASE_URL}/api/quiz/grind/finalize-v2`,
+      `${BASE_URL}/api/quiz/grind/finalize-v4`,
       JSON.stringify(payload),
-      { headers, tags: { name: 'POST /api/quiz/grind/finalize-v2' } }
+      { headers, tags: { name: 'POST /api/quiz/grind/finalize-v4' } }
     );
 
     finalizeDuration.add(res.timings.duration);
