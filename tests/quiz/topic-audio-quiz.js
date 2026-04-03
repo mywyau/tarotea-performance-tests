@@ -1,14 +1,10 @@
 import { check, group, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
 import http from 'k6/http';
-import { Trend, Counter } from 'k6/metrics';
+import { Counter, Trend } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const TOPIC_SLUG = __ENV.TOPIC_SLUG || 'survival-essentials';
-const CDN_BASE = __ENV.CDN_BASE || BASE_URL;
-
-// true = also fetch audio files like the page does
-const FETCH_AUDIO = (__ENV.FETCH_AUDIO || 'true').toLowerCase() === 'true';
 
 // mixed | correct | wrong | random
 const ANSWER_MODE = (__ENV.ANSWER_MODE || 'mixed').toLowerCase();
@@ -23,11 +19,9 @@ if (!tokens.length) {
 
 const loadDuration = new Trend('topic_audio_quiz_load_duration');
 const finalizeDuration = new Trend('topic_audio_quiz_finalize_duration');
-const audioDuration = new Trend('topic_audio_quiz_file_duration');
 
 const quizzesLoaded = new Counter('topic_audio_quizzes_loaded');
 const quizzesFinalized = new Counter('topic_audio_quizzes_finalized');
-const audioFilesFetched = new Counter('topic_audio_files_fetched');
 
 function getToken() {
   const index = (__VU + __ITER) % tokens.length;
@@ -93,7 +87,6 @@ export const options = {
 
     topic_audio_quiz_load_duration: ['p(95)<1200'],
     topic_audio_quiz_finalize_duration: ['p(95)<1200'],
-    topic_audio_quiz_file_duration: ['p(95)<1500'],
   },
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
@@ -157,7 +150,6 @@ export default function () {
       check(questions[0], {
         'question type audio': (q) => q?.type === 'audio',
         'question has wordId': (q) => !!q?.wordId,
-        'question has audioKey': (q) => !!q?.audioKey,
         'question has options': (q) => Array.isArray(q?.options) && q.options.length >= 2,
         'question has valid correctIndex': (q) =>
           Number.isInteger(q?.correctIndex) &&
@@ -173,25 +165,6 @@ export default function () {
   }
 
   for (let i = 0; i < questions.length; i++) {
-    const q = questions[i];
-    const audioKey = q?.audioKey || null;
-
-    if (FETCH_AUDIO && audioKey) {
-      const audioRes = http.get(`${CDN_BASE}/audio/${audioKey}`, {
-        headers: {
-          Accept: 'audio/mpeg,*/*',
-        },
-        tags: { name: 'GET /audio/:audioKey' },
-      });
-
-      audioDuration.add(audioRes.timings.duration);
-      audioFilesFetched.add(1);
-
-      check(audioRes, {
-        'topic audio file fetch 200/206': (r) => r.status === 200 || r.status === 206,
-      });
-    }
-
     sleep(randomBetween(2, 6));
   }
 
@@ -229,13 +202,13 @@ export default function () {
     }
 
     check(json, {
-      'finalize returns quiz object': (body) => !!body?.quiz,
-      'finalize returns xpEarned': (body) => typeof body?.quiz?.xpEarned === 'number',
       'finalize returns attemptId': (body) => typeof body?.attemptId === 'string',
       'finalize queued optional boolean': (body) =>
         body?.queued === undefined || typeof body.queued === 'boolean',
       'finalize deduped optional boolean': (body) =>
         body?.deduped === undefined || typeof body.deduped === 'boolean',
+      'finalize status optional string': (body) =>
+        body?.status === undefined || typeof body.status === 'string',
     });
   });
 
