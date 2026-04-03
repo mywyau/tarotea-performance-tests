@@ -58,7 +58,7 @@ async function fetchWith429Retry(url, options, label, maxRetries = 6) {
     }
 
     // const waitMs = computeRateLimitDelayMs(res, attempt);
-    console.log(`${label}: hit 429, waiting ${waitMs}ms before retry...`);
+    console.log(`${label}: hit 429, waiting ${1500}ms before retry...`);
     await sleep(1500);
   }
 
@@ -66,6 +66,7 @@ async function fetchWith429Retry(url, options, label, maxRetries = 6) {
 }
 
 async function findUsersByEmail(mgmtToken, email) {
+
   const res = await fetchWith429Retry(
     `https://${AUTH0_DOMAIN}/api/v2/users-by-email?email=${encodeURIComponent(email)}`,
     {
@@ -104,7 +105,9 @@ async function main() {
   const mgmtToken = await getManagementToken();
 
   for (let i = 1; i <= USER_COUNT; i++) {
+
     const email = `loadtest+${i}@example.com`;
+    await sleep(1000);
     const users = await findUsersByEmail(mgmtToken, email);
 
     if (users.length === 0) {
@@ -120,7 +123,7 @@ async function main() {
     }
   }
 
-  await fs.rm('./tokens.json', { force: true });
+  await fs.rm('../../auth/tokens.json', { force: true });
   console.log('Done');
 }
 

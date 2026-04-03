@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-node delete-test-users.mjs
+node ./auth/delete-test-users.mjs

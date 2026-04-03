@@ -17,7 +17,7 @@ const TEST_APP_CLIENT_SECRET = process.env.AUTH0_TEST_APP_CLIENT_SECRET;
 const AUTH0_DB_CONNECTION = process.env.AUTH0_DB_CONNECTION;
 const APP_BASE_URL = process.env.APP_BASE_URL;
 
-const USER_COUNT = Number(process.env.USER_COUNT || 100);
+const USER_COUNT = Number(process.env.USER_COUNT || 1000);
 
 // Delay between each full user bootstrap
 const USER_DELAY_MS = Number(process.env.USER_DELAY_MS || 750);
@@ -214,7 +214,7 @@ async function main() {
     }
   }
 
-  await fs.writeFile('./tokens.json', JSON.stringify(tokens, null, 2));
+  await fs.writeFile('../../auth/tokens.json', JSON.stringify(tokens, null, 2));
   console.log(`Wrote ${tokens.length} tokens to tokens.json`);
 }
 
