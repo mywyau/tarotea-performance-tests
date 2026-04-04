@@ -160,13 +160,11 @@ export default function () {
   });
 
   if (!questions.length || !answers.length) {
-    sleep(randomBetween(1, 4));
+    sleep(randomBetween(0.1, 0.2));
     return;
   }
 
-  for (let i = 0; i < questions.length; i++) {
-    sleep(randomBetween(2, 6));
-  }
+  sleep(randomBetween(5, 10));
 
   attemptId = createAttemptId();
 
@@ -212,5 +210,5 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(5, 20));
+  sleep(randomBetween(1, 3));
 }

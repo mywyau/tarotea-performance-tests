@@ -1,7 +1,7 @@
 import { check, group, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
 import http from 'k6/http';
-import { Trend, Counter } from 'k6/metrics';
+import { Counter, Trend } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const TOPIC_SLUG = __ENV.TOPIC_SLUG || 'survival-essentials';
@@ -77,7 +77,7 @@ export const options = {
         { duration: '30s', target: 25 },
         { duration: '30s', target: 50 },
         { duration: '30s', target: 100 },
-        { duration: '60s', target: 100 },
+        { duration: '30s', target: 100 },
         { duration: '30s', target: 0 },
       ],
       gracefulRampDown: '30s',
@@ -178,27 +178,10 @@ export default function () {
     const wordId = q?.wordId || null;
 
     // User reads question, chooses answer
-    sleep(randomBetween(2, 5));
-
-    // The page plays the current word audio after answering
-    if (FETCH_WORD_AUDIO && wordId) {
-      const audioRes = http.get(`${CDN_BASE}/audio/${wordId}.mp3`, {
-        headers: {
-          Accept: 'audio/mpeg,*/*',
-        },
-        tags: { name: 'GET /audio/:wordId.mp3' },
-      });
-
-      audioDuration.add(audioRes.timings.duration);
-      wordAudioFetched.add(1);
-
-      check(audioRes, {
-        'word audio fetch 200/206': (r) => r.status === 200 || r.status === 206,
-      });
-    }
+    sleep(randomBetween(0.5, 1));
 
     // Small delay before next
-    sleep(randomBetween(0.5, 2));
+    sleep(randomBetween(0.2, 0.3));
   }
 
   attemptId = createAttemptId();
@@ -245,5 +228,5 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(5, 20));
+  sleep(randomBetween(1, 3));
 }
