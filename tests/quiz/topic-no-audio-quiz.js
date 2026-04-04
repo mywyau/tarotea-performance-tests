@@ -178,10 +178,10 @@ export default function () {
     const wordId = q?.wordId || null;
 
     // User reads question, chooses answer
-    sleep(randomBetween(0.5, 1));
+    sleep(randomBetween(0.1, 0.2));
 
     // Small delay before next
-    sleep(randomBetween(0.2, 0.3));
+    sleep(randomBetween(0.1, 0.2));
   }
 
   attemptId = createAttemptId();
@@ -228,5 +228,5 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(1, 3));
+  sleep(randomBetween(1, 2));
 }

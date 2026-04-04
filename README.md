@@ -13,3 +13,4 @@ k6 cloud run level-word-quiz.js
 
 k6 cloud run ./tests/quiz/sentence-vocab-quiz.js
 k6 cloud run ./tests/quiz/sentence-audio-quiz.js
+k6 cloud run ./tests/dojo/level-chinese.js

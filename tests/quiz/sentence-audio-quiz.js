@@ -144,14 +144,14 @@ export default function () {
   });
 
   if (!sessionKey || answers.length === 0 || questions.length === 0) {
-    sleep(randomBetween(1, 4));
+    sleep(randomBetween(0.1, 0.2));
     return;
   }
 
   // Simulate the user going through the quiz question by question,
   // but without fetching audio files.
   for (let i = 0; i < questions.length; i++) {
-    sleep(randomBetween(2, 6));
+    sleep(randomBetween(0.1, 0.2));
   }
 
   group('finalize sentence quiz', () => {
@@ -179,5 +179,5 @@ export default function () {
   });
 
   // Pause before the same user starts another quiz.
-  sleep(randomBetween(5, 20));
+  sleep(randomBetween(1, 3));
 }

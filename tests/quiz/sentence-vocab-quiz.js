@@ -115,11 +115,11 @@ export default function () {
   });
 
   if (!sessionKey || answers.length === 0) {
-    sleep(randomBetween(1, 5));
+    sleep(randomBetween(0.1, 0.2));
     return;
   }
 
-  sleep(randomBetween(20, 60));
+  sleep(randomBetween(5, 10));
 
   group('finalize sentence audio quiz', () => {
     const res = http.post(
@@ -141,5 +141,5 @@ export default function () {
     });
   });
 
-  sleep(randomBetween(2, 8));
+  sleep(randomBetween(1, 3));
 }

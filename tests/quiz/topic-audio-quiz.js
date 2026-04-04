@@ -164,7 +164,7 @@ export default function () {
     return;
   }
 
-  sleep(randomBetween(5, 10));
+  sleep(randomBetween(5, 8));
 
   attemptId = createAttemptId();
 
