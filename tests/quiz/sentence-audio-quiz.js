@@ -5,11 +5,6 @@ import { Trend, Counter } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-one';
-const CDN_BASE = __ENV.CDN_BASE || 'https://www.tarotea.co.uk';
-
-// Whether to also fetch the audio mp3 files like the page does.
-// Set FETCH_AUDIO=false if you only want backend API load.
-const FETCH_AUDIO = (__ENV.FETCH_AUDIO || 'true').toLowerCase() === 'true';
 
 // How the simulated user answers:
 // "mixed" = alternating correct/incorrect
@@ -26,13 +21,11 @@ if (!tokens.length) {
   throw new Error('tokens.json is empty');
 }
 
-const startDuration = new Trend('sentence_audio_start_duration');
-const finalizeDuration = new Trend('sentence_audio_finalize_duration');
-const audioDuration = new Trend('sentence_audio_file_duration');
+const startDuration = new Trend('sentence_start_duration');
+const finalizeDuration = new Trend('sentence_finalize_duration');
 
-const quizzesStarted = new Counter('sentence_audio_quizzes_started');
-const quizzesFinalized = new Counter('sentence_audio_quizzes_finalized');
-const audioFilesFetched = new Counter('sentence_audio_files_fetched');
+const quizzesStarted = new Counter('sentence_quizzes_started');
+const quizzesFinalized = new Counter('sentence_quizzes_finalized');
 
 function getToken() {
   // Rotates across both VUs and iterations so the same VU does not keep reusing only one token.
@@ -70,7 +63,7 @@ function decideCorrect(index) {
 
 export const options = {
   scenarios: {
-    sentence_audio_quiz_page: {
+    sentence_quiz_page: {
       executor: 'ramping-vus',
       startVUs: 1,
       stages: [
@@ -92,11 +85,8 @@ export const options = {
     'http_req_duration{name:GET /api/sentences/v2/start}': ['p(95)<1200'],
     'http_req_duration{name:POST /api/sentences/v2/finalize}': ['p(95)<1500'],
 
-    sentence_audio_start_duration: ['p(95)<1200'],
-    sentence_audio_finalize_duration: ['p(95)<1500'],
-
-    // Only meaningful if FETCH_AUDIO=true
-    sentence_audio_file_duration: ['p(95)<1500'],
+    sentence_start_duration: ['p(95)<1200'],
+    sentence_finalize_duration: ['p(95)<1500'],
   },
 
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
@@ -109,7 +99,7 @@ export default function () {
   let answers = [];
   let questions = [];
 
-  group('start sentence audio quiz', () => {
+  group('start sentence quiz', () => {
     const res = http.get(
       `${BASE_URL}/api/sentences/v2/start?scope=level&slug=${encodeURIComponent(LEVEL_SLUG)}`,
       {
@@ -121,7 +111,7 @@ export default function () {
     startDuration.add(res.timings.duration);
 
     const ok = check(res, {
-      'sentence audio start 200': (r) => r.status === 200,
+      'sentence start 200': (r) => r.status === 200,
     });
 
     if (!ok) return;
@@ -158,33 +148,13 @@ export default function () {
     return;
   }
 
-  // Simulate the user going through the quiz question by question.
-  // The real page autoplay-fetches audio per question and waits for user interaction.
+  // Simulate the user going through the quiz question by question,
+  // but without fetching audio files.
   for (let i = 0; i < questions.length; i++) {
-    const q = questions[i];
-    const audioKey = q?.sentenceId ? `${q.sentenceId}.mp3` : null;
-
-    if (FETCH_AUDIO && audioKey) {
-      const audioRes = http.get(`${CDN_BASE}/audio/${audioKey}`, {
-        headers: {
-          Accept: 'audio/mpeg,*/*',
-        },
-        tags: { name: 'GET /audio/:sentenceId.mp3' },
-      });
-
-      audioDuration.add(audioRes.timings.duration);
-      audioFilesFetched.add(1);
-
-      check(audioRes, {
-        'audio file fetch 200/206': (r) => r.status === 200 || r.status === 206,
-      });
-    }
-
-    // User listens, thinks, taps an answer, sees feedback, then moves on.
     sleep(randomBetween(2, 6));
   }
 
-  group('finalize sentence audio quiz', () => {
+  group('finalize sentence quiz', () => {
     const res = http.post(
       `${BASE_URL}/api/sentences/v2/finalize`,
       JSON.stringify({
@@ -200,7 +170,7 @@ export default function () {
     finalizeDuration.add(res.timings.duration);
 
     const ok = check(res, {
-      'sentence audio finalize 200': (r) => r.status === 200,
+      'sentence finalize 200': (r) => r.status === 200,
     });
 
     if (ok) {

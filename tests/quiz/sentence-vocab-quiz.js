@@ -4,7 +4,7 @@ import http from 'k6/http';
 import { Trend } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
-const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-one';
+const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-three';
 
 const tokens = new SharedArray('tokens', function () {
   return JSON.parse(open('../../auth/tokens.json'));
