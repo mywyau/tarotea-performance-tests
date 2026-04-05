@@ -66,7 +66,7 @@ export const options = {
         'http_req_duration{name:GET /api/vocab-quiz/:slug}': ['p(95)<1000'],
         'http_req_duration{name:GET /api/word-progress/weakestV3}': ['p(95)<1000'],
         'http_req_duration{name:GET /api/word-progress/v3}': ['p(95)<1200'],
-        'http_req_duration{name:POST /api/quiz/grind/finalize-v4}': ['p(95)<1200'],
+        'http_req_duration{name:POST /api/quiz/grind/finalize-v5}': ['p(95)<1200'],
 
         startup_burst_duration: ['p(95)<1200'],
         progress_fetch_duration: ['p(95)<1200'],
@@ -157,9 +157,9 @@ export default function () {
         };
 
         const res = http.post(
-            `${BASE_URL}/api/quiz/grind/finalize-v4`,
+            `${BASE_URL}/api/quiz/grind/finalize-v5`,
             JSON.stringify(payload),
-            { headers, tags: { name: 'POST /api/quiz/grind/finalize-v4' } }
+            { headers, tags: { name: 'POST /api/quiz/grind/finalize-v5' } }
         );
 
         finalizeDuration.add(res.timings.duration);
