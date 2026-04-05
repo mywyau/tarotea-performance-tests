@@ -6,17 +6,29 @@ import { Trend, Counter } from 'k6/metrics';
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-one';
 
-// fast defaults
-const SENTENCE_THINK_MIN = Number(__ENV.SENTENCE_THINK_MIN || '0.03');
-const SENTENCE_THINK_MAX = Number(__ENV.SENTENCE_THINK_MAX || '0.12');
 
 const HINT_RATE = Number(__ENV.HINT_RATE || '0.15');
+
+// fast defaults
+
+const SENTENCE_THINK_MIN = Number(__ENV.SENTENCE_THINK_MIN || '0.03');
+const SENTENCE_THINK_MAX = Number(__ENV.SENTENCE_THINK_MAX || '0.12');
 
 const FINALIZE_DELAY_MIN = Number(__ENV.FINALIZE_DELAY_MIN || '0.01');
 const FINALIZE_DELAY_MAX = Number(__ENV.FINALIZE_DELAY_MAX || '0.05');
 
 const SESSION_PAUSE_MIN = Number(__ENV.SESSION_PAUSE_MIN || '0.05');
 const SESSION_PAUSE_MAX = Number(__ENV.SESSION_PAUSE_MAX || '0.15');
+
+// slower sleeps for realism
+// const SENTENCE_THINK_MIN = Number(__ENV.SENTENCE_THINK_MIN || '1.0');
+// const SENTENCE_THINK_MAX = Number(__ENV.SENTENCE_THINK_MAX || '3.0');
+
+// const FINALIZE_DELAY_MIN = Number(__ENV.FINALIZE_DELAY_MIN || '0.5');
+// const FINALIZE_DELAY_MAX = Number(__ENV.FINALIZE_DELAY_MAX || '1.5');
+
+// const SESSION_PAUSE_MIN = Number(__ENV.SESSION_PAUSE_MIN || '1');
+// const SESSION_PAUSE_MAX = Number(__ENV.SESSION_PAUSE_MAX || '5');
 
 const tokens = new SharedArray('tokens', function () {
   return JSON.parse(open('../../auth/tokens.json'));

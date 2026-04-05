@@ -76,8 +76,8 @@ export const options = {
     http_req_duration: ['p(95)<1800', 'p(99)<3000'],
     checks: ['rate>0.99'],
 
-    'http_req_duration{name:GET /api/sentences/topics/v2/start}': ['p(95)<1200'],
-    'http_req_duration{name:POST /api/sentences/topics/v2/finalize}': ['p(95)<1200'],
+    'http_req_duration{name:GET /api/sentences/topics/v3/start}': ['p(95)<1200'],
+    'http_req_duration{name:POST /api/sentences/topics/v3/finalize}': ['p(95)<1200'],
 
     topic_sentence_quiz_start_duration: ['p(95)<1200'],
     topic_sentence_quiz_finalize_duration: ['p(95)<1200'],
@@ -94,10 +94,10 @@ export default function () {
 
   group('start topic sentence quiz', () => {
     const res = http.get(
-      `${BASE_URL}/api/sentences/topics/v2/start?scope=topic&slug=${encodeURIComponent(TOPIC_SLUG)}`,
+      `${BASE_URL}/api/sentences/topics/v3/start?scope=topic&slug=${encodeURIComponent(TOPIC_SLUG)}`,
       {
         headers,
-        tags: { name: 'GET /api/sentences/topics/v2/start' },
+        tags: { name: 'GET /api/sentences/topics/v3/start' },
       }
     );
 
@@ -168,14 +168,14 @@ export default function () {
 
   group('finalize topic sentence quiz', () => {
     const res = http.post(
-      `${BASE_URL}/api/sentences/topics/v2/finalize`,
+      `${BASE_URL}/api/sentences/topics/v3/finalize`,
       JSON.stringify({
         sessionKey,
         answers,
       }),
       {
         headers,
-        tags: { name: 'POST /api/sentences/topics/v2/finalize' },
+        tags: { name: 'POST /api/sentences/topics/v3/finalize' },
       }
     );
 

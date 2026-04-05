@@ -19,6 +19,16 @@ const FINALIZE_DELAY_MAX = Number(__ENV.FINALIZE_DELAY_MAX || '0.05');
 const SESSION_PAUSE_MIN = Number(__ENV.SESSION_PAUSE_MIN || '0.05');
 const SESSION_PAUSE_MAX = Number(__ENV.SESSION_PAUSE_MAX || '0.15');
 
+// slower sleeps for realism
+// const SENTENCE_THINK_MIN = Number(__ENV.SENTENCE_THINK_MIN || '1.0');
+// const SENTENCE_THINK_MAX = Number(__ENV.SENTENCE_THINK_MAX || '3.0');
+
+// const FINALIZE_DELAY_MIN = Number(__ENV.FINALIZE_DELAY_MIN || '0.5');
+// const FINALIZE_DELAY_MAX = Number(__ENV.FINALIZE_DELAY_MAX || '1.5');
+
+// const SESSION_PAUSE_MIN = Number(__ENV.SESSION_PAUSE_MIN || '1');
+// const SESSION_PAUSE_MAX = Number(__ENV.SESSION_PAUSE_MAX || '5');
+
 // optional: mimic page audio fetches
 const FETCH_AUDIO = (__ENV.FETCH_AUDIO || 'false').toLowerCase() === 'true';
 

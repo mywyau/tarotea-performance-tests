@@ -83,7 +83,7 @@ export const options = {
     checks: ['rate>0.99'],
 
     'http_req_duration{name:GET /api/topic/audio-quiz/:topicSlug}': ['p(95)<1200'],
-    'http_req_duration{name:POST /api/quiz/grind/finalize-v4}': ['p(95)<1200'],
+    'http_req_duration{name:POST /api/quiz/grind/finalize-v5}': ['p(95)<1200'],
 
     topic_audio_quiz_load_duration: ['p(95)<1200'],
     topic_audio_quiz_finalize_duration: ['p(95)<1200'],
@@ -164,13 +164,13 @@ export default function () {
     return;
   }
 
-  sleep(randomBetween(5, 8));
+  sleep(randomBetween(3, 5));
 
   attemptId = createAttemptId();
 
   group('finalize topic audio quiz', () => {
     const res = http.post(
-      `${BASE_URL}/api/quiz/grind/finalize-v4`,
+      `${BASE_URL}/api/quiz/grind/finalize-v5`,
       JSON.stringify({
         attemptId,
         mode: 'grind-topic-audio',
@@ -178,7 +178,7 @@ export default function () {
       }),
       {
         headers,
-        tags: { name: 'POST /api/quiz/grind/finalize-v4' },
+        tags: { name: 'POST /api/quiz/grind/finalize-v5' },
       }
     );
 

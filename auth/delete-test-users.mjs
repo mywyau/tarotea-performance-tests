@@ -8,7 +8,7 @@ loadEnvFile();
 const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
 const MGMT_CLIENT_ID = process.env.AUTH0_MGMT_CLIENT_ID;
 const MGMT_CLIENT_SECRET = process.env.AUTH0_MGMT_CLIENT_SECRET;
-const USER_COUNT = Number(process.env.USER_COUNT || 100);
+const USER_COUNT = Number(process.env.USER_COUNT || 500);
 
 async function getManagementToken() {
   const res = await fetch(`https://${AUTH0_DOMAIN}/oauth/token`, {

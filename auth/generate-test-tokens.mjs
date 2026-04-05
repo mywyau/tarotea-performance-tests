@@ -1,6 +1,8 @@
 // generate-test-tokens.mjs
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import { loadEnvFile } from 'node:process';
+import { fileURLToPath } from 'node:url';
 
 loadEnvFile();
 
@@ -17,7 +19,7 @@ const TEST_APP_CLIENT_SECRET = process.env.AUTH0_TEST_APP_CLIENT_SECRET;
 const AUTH0_DB_CONNECTION = process.env.AUTH0_DB_CONNECTION;
 const APP_BASE_URL = process.env.APP_BASE_URL;
 
-const USER_COUNT = Number(process.env.USER_COUNT || 1000);
+const USER_COUNT = Number(process.env.USER_COUNT || 500);
 
 // Delay between each full user bootstrap
 const USER_DELAY_MS = Number(process.env.USER_DELAY_MS || 750);
@@ -214,7 +216,13 @@ async function main() {
     }
   }
 
-  await fs.writeFile('../../auth/tokens.json', JSON.stringify(tokens, null, 2));
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const tokensPath = path.join(__dirname, 'tokens.json');
+
+  await fs.writeFile(tokensPath, JSON.stringify(tokens, null, 2));
+
+  // await fs.writeFile('./tokens.json', JSON.stringify(tokens, null, 2));
   console.log(`Wrote ${tokens.length} tokens to tokens.json`);
 }
 
