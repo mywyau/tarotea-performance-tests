@@ -1,10 +1,15 @@
 import { check, group, sleep } from 'k6';
 import { SharedArray } from 'k6/data';
 import http from 'k6/http';
-import { Trend } from 'k6/metrics';
+import { Trend, Counter } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const LEVEL_SLUG = __ENV.LEVEL_SLUG || 'level-one';
+const CDN_BASE = (__ENV.CDN_BASE || BASE_URL).replace(/\/$/, '');
+
+// true = fetch success jingle on the completion screen
+const FETCH_SUCCESS_JINGLE = (__ENV.FETCH_SUCCESS_JINGLE || 'true').toLowerCase() === 'true';
+const SUCCESS_JINGLE_PATH = (__ENV.SUCCESS_JINGLE_PATH || '/audio/sfx/quiz-success.mp3').replace(/^\//, '');
 
 const tokens = new SharedArray('tokens', function () {
     return JSON.parse(open('../../auth/tokens.json'));
@@ -13,6 +18,9 @@ const tokens = new SharedArray('tokens', function () {
 const startupBurstDuration = new Trend('startup_burst_duration');
 const progressFetchDuration = new Trend('progress_fetch_duration');
 const finalizeDuration = new Trend('finalize_duration');
+const successJingleDuration = new Trend('success_jingle_duration');
+
+const successJinglesFetched = new Counter('success_jingles_fetched');
 
 function buildHeaders() {
     const token = tokens[Math.floor(Math.random() * tokens.length)];
@@ -67,10 +75,12 @@ export const options = {
         'http_req_duration{name:GET /api/word-progress/weakestV4}': ['p(95)<1000'],
         'http_req_duration{name:GET /api/word-progress/v3}': ['p(95)<1200'],
         'http_req_duration{name:POST /api/quiz/grind/finalize-v5}': ['p(95)<1200'],
+        'http_req_duration{name:GET /audio/sfx/quiz-success.mp3}': ['p(95)<1500'],
 
         startup_burst_duration: ['p(95)<1200'],
         progress_fetch_duration: ['p(95)<1200'],
         finalize_duration: ['p(95)<1200'],
+        success_jingle_duration: ['p(95)<1500'],
     },
     summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
@@ -164,9 +174,28 @@ export default function () {
 
         finalizeDuration.add(res.timings.duration);
 
-        check(res, {
+        const finalizeOk = check(res, {
             'finalize 200': (r) => r.status === 200,
         });
+
+        if (!finalizeOk || !FETCH_SUCCESS_JINGLE) {
+            return;
+        }
+
+        const jingleRes = http.get(`${CDN_BASE}/${SUCCESS_JINGLE_PATH}`, {
+            headers: { Accept: 'audio/mpeg,*/*' },
+            tags: { name: 'GET /audio/sfx/quiz-success.mp3' },
+        });
+
+        successJingleDuration.add(jingleRes.timings.duration);
+
+        const jingleOk = check(jingleRes, {
+            'success jingle fetch 200/206': (r) => r.status === 200 || r.status === 206,
+        });
+
+        if (jingleOk) {
+            successJinglesFetched.add(1);
+        }
     });
 
       sleep(randomBetween(1, 3));
