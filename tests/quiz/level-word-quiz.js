@@ -63,8 +63,8 @@ export const options = {
         http_req_duration: ['p(95)<1800', 'p(99)<3000'],
         checks: ['rate>0.99'],
 
-        'http_req_duration{name:GET /api/vocab-quiz/:slug}': ['p(95)<1000'],
-        'http_req_duration{name:GET /api/word-progress/weakestV3}': ['p(95)<1000'],
+        'http_req_duration{name:GET /api/vocab-quiz/v2/:slug}': ['p(95)<1000'],
+        'http_req_duration{name:GET /api/word-progress/weakestV4}': ['p(95)<1000'],
         'http_req_duration{name:GET /api/word-progress/v3}': ['p(95)<1200'],
         'http_req_duration{name:POST /api/quiz/grind/finalize-v5}': ['p(95)<1200'],
 
@@ -85,15 +85,15 @@ export default function () {
         const responses = http.batch([
             [
                 'GET',
-                `${BASE_URL}/api/vocab-quiz/${LEVEL_SLUG}`,
+                `${BASE_URL}/api/vocab-quiz/v2/${LEVEL_SLUG}`,
                 null,
-                { headers, tags: { name: 'GET /api/vocab-quiz/:slug' } },
+                { headers, tags: { name: 'GET /api/vocab-quiz/v2/:slug' } },
             ],
             [
                 'GET',
-                `${BASE_URL}/api/word-progress/weakestV3?level=${encodeURIComponent(LEVEL_SLUG)}`,
+                `${BASE_URL}/api/word-progress/weakestV4?level=${encodeURIComponent(LEVEL_SLUG)}&limit=30`,
                 null,
-                { headers, tags: { name: 'GET /api/word-progress/weakestV3' } },
+                { headers, tags: { name: 'GET /api/word-progress/weakestV4' } },
             ],
         ]);
 
@@ -107,7 +107,7 @@ export default function () {
         });
 
         check(weakestRes, {
-            'weakestV3 200': (r) => r.status === 200,
+            'weakestV4 200': (r) => r.status === 200,
         });
 
         if (quizRes.status !== 200) return;
