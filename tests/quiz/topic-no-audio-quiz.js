@@ -5,7 +5,11 @@ import { Counter, Trend } from 'k6/metrics';
 
 const BASE_URL = __ENV.APP_BASE_URL || 'https://www.tarotea.co.uk';
 const TOPIC_SLUG = __ENV.TOPIC_SLUG || 'survival-essentials';
-const CDN_BASE = __ENV.CDN_BASE || BASE_URL;
+const CDN_BASE = (__ENV.CDN_BASE || BASE_URL).replace(/\/$/, '');
+
+// true = fetch success jingle on the completion screen
+const FETCH_SUCCESS_JINGLE = (__ENV.FETCH_SUCCESS_JINGLE || 'true').toLowerCase() === 'true';
+const SUCCESS_JINGLE_PATH = (__ENV.SUCCESS_JINGLE_PATH || '/audio/sfx/quiz-success.mp3').replace(/^\//, '');
 
 // true = also fetch /audio/{wordId}.mp3 after each answer like the page does
 const FETCH_WORD_AUDIO = (__ENV.FETCH_WORD_AUDIO || 'true').toLowerCase() === 'true';
@@ -24,10 +28,12 @@ if (!tokens.length) {
 const loadDuration = new Trend('topic_word_quiz_load_duration');
 const finalizeDuration = new Trend('topic_word_quiz_finalize_duration');
 const audioDuration = new Trend('topic_word_quiz_audio_duration');
+const successJingleDuration = new Trend('topic_word_quiz_success_jingle_duration');
 
 const quizzesLoaded = new Counter('topic_word_quizzes_loaded');
 const quizzesFinalized = new Counter('topic_word_quizzes_finalized');
 const wordAudioFetched = new Counter('topic_word_audio_files_fetched');
+const successJinglesFetched = new Counter('topic_word_success_jingles_fetched');
 
 function getToken() {
   const index = (__VU + __ITER) % tokens.length;
@@ -90,10 +96,12 @@ export const options = {
 
     'http_req_duration{name:GET /api/topic/quiz/:topicSlug}': ['p(95)<1200'],
     'http_req_duration{name:POST /api/quiz/grind/finalize-v5}': ['p(95)<1200'],
+    'http_req_duration{name:GET /audio/sfx/quiz-success.mp3}': ['p(95)<1500'],
 
     topic_word_quiz_load_duration: ['p(95)<1200'],
     topic_word_quiz_finalize_duration: ['p(95)<1200'],
     topic_word_quiz_audio_duration: ['p(95)<1500'],
+    topic_word_quiz_success_jingle_duration: ['p(95)<1500'],
   },
   summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
@@ -226,6 +234,25 @@ export default function () {
       'deduped optional boolean': (body) =>
         body?.deduped === undefined || typeof body.deduped === 'boolean',
     });
+
+    if (!ok || !FETCH_SUCCESS_JINGLE) {
+      return;
+    }
+
+    const jingleRes = http.get(`${CDN_BASE}/${SUCCESS_JINGLE_PATH}`, {
+      headers: { Accept: 'audio/mpeg,*/*' },
+      tags: { name: 'GET /audio/sfx/quiz-success.mp3' },
+    });
+
+    successJingleDuration.add(jingleRes.timings.duration);
+
+    const jingleOk = check(jingleRes, {
+      'success jingle fetch 200/206': (r) => r.status === 200 || r.status === 206,
+    });
+
+    if (jingleOk) {
+      successJinglesFetched.add(1);
+    }
   });
 
   sleep(randomBetween(1, 2));
