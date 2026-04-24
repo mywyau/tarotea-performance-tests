@@ -82,7 +82,7 @@ export const options = {
     http_req_duration: ['p(95)<2000', 'p(99)<3500'],
     checks: ['rate>0.99'],
 
-    'http_req_duration{name:GET /api/sentences/v3/start}': ['p(95)<1200'],
+    'http_req_duration{name:GET /api/sentences/v3/start-v2}': ['p(95)<1200'],
     'http_req_duration{name:POST /api/sentences/v3/finalize}': ['p(95)<1500'],
 
     sentence_start_duration: ['p(95)<1200'],
@@ -101,10 +101,10 @@ export default function () {
 
   group('start sentence quiz', () => {
     const res = http.get(
-      `${BASE_URL}/api/sentences/v3/start?scope=level&slug=${encodeURIComponent(LEVEL_SLUG)}`,
+      `${BASE_URL}/api/sentences/v3/start-v2?scope=level&slug=${encodeURIComponent(LEVEL_SLUG)}`,
       {
         headers,
-        tags: { name: 'GET /api/sentences/v3/start' },
+        tags: { name: 'GET /api/sentences/v3/start-v2' },
       }
     );
 
