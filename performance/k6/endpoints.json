@@ -1,0 +1,1230 @@
+[
+  {
+    "name": "Health Check",
+    "method": "GET",
+    "path": "/api/health",
+    "sourceFile": "tarotea-frontend/server/api/health.get.ts",
+    "category": "health",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Sitemap XML",
+    "method": "GET",
+    "path": "/sitemap.xml",
+    "sourceFile": "tarotea-frontend/server/routes/sitemap.xml.ts",
+    "category": "seo",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Current Users Count",
+    "method": "GET",
+    "path": "/api/current-users",
+    "sourceFile": "tarotea-frontend/server/api/current-users.get.ts",
+    "category": "presence",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Touch Current User Session",
+    "method": "POST",
+    "path": "/api/current-users",
+    "sourceFile": "tarotea-frontend/server/api/current-users.post.ts",
+    "category": "presence",
+    "authRequired": false,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": {
+      "sessionId": "k6-session-1"
+    }
+  },
+  {
+    "name": "Total User Stats",
+    "method": "GET",
+    "path": "/api/total-users-stats",
+    "sourceFile": "tarotea-frontend/server/api/total-users-stats.ts",
+    "category": "stats",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Current User V2",
+    "method": "GET",
+    "path": "/api/meV2",
+    "sourceFile": "tarotea-frontend/server/api/meV2.get.ts",
+    "category": "user",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Post Login",
+    "method": "POST",
+    "path": "/api/auth/post-login",
+    "sourceFile": "tarotea-frontend/server/api/auth/post-login.post.ts",
+    "category": "auth",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "email": "k6@example.com"
+    }
+  },
+  {
+    "name": "Account Profile Update",
+    "method": "POST",
+    "path": "/api/account/v2/profile",
+    "sourceFile": "tarotea-frontend/server/api/account/v2/profile.post.ts",
+    "category": "account",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "displayName": "K6 User"
+    }
+  },
+  {
+    "name": "Account Delete",
+    "method": "DELETE",
+    "path": "/api/account/v2",
+    "sourceFile": "tarotea-frontend/server/api/account/v2/index.delete.ts",
+    "category": "account",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "confirmation": "DELETE"
+    }
+  },
+  {
+    "name": "Account Delete Worker",
+    "method": "POST",
+    "path": "/api/account/v2/worker-delete",
+    "sourceFile": "tarotea-frontend/server/api/account/v2/worker-delete.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Billing Current User",
+    "method": "GET",
+    "path": "/api/billing/me",
+    "sourceFile": "tarotea-frontend/server/api/billing/me.get.ts",
+    "category": "billing",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Stripe Checkout",
+    "method": "POST",
+    "path": "/api/stripe/checkout",
+    "sourceFile": "tarotea-frontend/server/api/stripe/checkout.post.ts",
+    "category": "billing",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "priceId": "price_test",
+      "successUrl": "https://example.com/success",
+      "cancelUrl": "https://example.com/cancel"
+    }
+  },
+  {
+    "name": "Stripe Portal",
+    "method": "POST",
+    "path": "/api/stripe/portal",
+    "sourceFile": "tarotea-frontend/server/api/stripe/portal.post.ts",
+    "category": "billing",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {}
+  },
+  {
+    "name": "Stripe Webhook",
+    "method": "POST",
+    "path": "/api/stripe/v2/webhook",
+    "sourceFile": "tarotea-frontend/server/api/stripe/v2/webhook.post.ts",
+    "category": "billing",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "id": "evt_test",
+      "type": "checkout.session.completed"
+    }
+  },
+  {
+    "name": "Stripe Process Event Worker",
+    "method": "POST",
+    "path": "/api/stripe/v2/process-event-v2",
+    "sourceFile": "tarotea-frontend/server/api/stripe/v2/process-event-v2.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "eventId": "evt_test"
+    }
+  },
+  {
+    "name": "AI Usage",
+    "method": "GET",
+    "path": "/api/ai/usage",
+    "sourceFile": "tarotea-frontend/server/api/ai/usage.get.ts",
+    "category": "ai",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Pronunciation Check V3",
+    "method": "POST",
+    "path": "/api/pronunciation-check-v3",
+    "sourceFile": "tarotea-frontend/server/api/pronunciation-check-v3.post.ts",
+    "category": "pronunciation",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "audio": "<multipart audio file>",
+      "text": "nei5 hou2"
+    }
+  },
+  {
+    "name": "Pronunciation Tone Word V1",
+    "method": "POST",
+    "path": "/api/pronunciation-tone-word-v1",
+    "sourceFile": "tarotea-frontend/server/api/pronunciation-tone-word-v1.post.ts",
+    "category": "pronunciation",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "audio": "<multipart audio file>",
+      "wordId": "word-1"
+    }
+  },
+  {
+    "name": "Echo Lab Access",
+    "method": "GET",
+    "path": "/api/echo-lab/access",
+    "sourceFile": "tarotea-frontend/server/api/echo-lab/access.get.ts",
+    "category": "echo-lab",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Create Echo Lab Attempt",
+    "method": "POST",
+    "path": "/api/echo-lab/attempts",
+    "sourceFile": "tarotea-frontend/server/api/echo-lab/attempts.post.ts",
+    "category": "echo-lab",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "sentenceId": "sentence-1"
+    }
+  },
+  {
+    "name": "Get Echo Lab Attempt",
+    "method": "GET",
+    "path": "/api/echo-lab/attempts/:attemptId",
+    "sourceFile": "tarotea-frontend/server/api/echo-lab/attempts/[attemptId]/index.get.ts",
+    "category": "echo-lab",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {
+      "attemptId": "attempt-1"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Complete Echo Lab Upload",
+    "method": "POST",
+    "path": "/api/echo-lab/attempts/:attemptId/complete-upload",
+    "sourceFile": "tarotea-frontend/server/api/echo-lab/attempts/[attemptId]/complete-upload.post.ts",
+    "category": "echo-lab",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {
+      "attemptId": "attempt-1"
+    },
+    "exampleBody": {}
+  },
+  {
+    "name": "Queue Echo Lab Attempt",
+    "method": "POST",
+    "path": "/api/echo-lab/attempts/:attemptId/queue",
+    "sourceFile": "tarotea-frontend/server/api/echo-lab/attempts/[attemptId]/queue.post.ts",
+    "category": "echo-lab",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {
+      "attemptId": "attempt-1"
+    },
+    "exampleBody": {}
+  },
+  {
+    "name": "Process Echo Lab Attempt",
+    "method": "POST",
+    "path": "/api/echo-lab/attempts/:attemptId/process",
+    "sourceFile": "tarotea-frontend/server/api/echo-lab/attempts/[attemptId]/process.post.ts",
+    "category": "echo-lab",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {
+      "attemptId": "attempt-1"
+    },
+    "exampleBody": {}
+  },
+  {
+    "name": "Word Detail",
+    "method": "GET",
+    "path": "/api/words/:id",
+    "sourceFile": "tarotea-frontend/server/api/words/[id].ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "word-1"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Vocab Quiz",
+    "method": "GET",
+    "path": "/api/vocab-quiz/:id",
+    "sourceFile": "tarotea-frontend/server/api/vocab-quiz/[id].ts",
+    "category": "quiz",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Vocab Quiz V2",
+    "method": "GET",
+    "path": "/api/vocab-quiz/v2/:id",
+    "sourceFile": "tarotea-frontend/server/api/vocab-quiz/v2/[id].ts",
+    "category": "quiz",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Topic Content",
+    "method": "GET",
+    "path": "/api/topic/:id",
+    "sourceFile": "tarotea-frontend/server/api/topic/[id].ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Topic Sentences",
+    "method": "GET",
+    "path": "/api/topic/sentences/:id",
+    "sourceFile": "tarotea-frontend/server/api/topic/sentences/[id].ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "survival-essentials-sentences"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Topic Word Quiz",
+    "method": "GET",
+    "path": "/api/topic/quiz/:topicSlug",
+    "sourceFile": "tarotea-frontend/server/api/topic/quiz/[topicSlug].ts",
+    "category": "quiz",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "topicSlug": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Topic Word Quiz V2",
+    "method": "GET",
+    "path": "/api/topic/quiz/v2/:topicSlug",
+    "sourceFile": "tarotea-frontend/server/api/topic/quiz/v2/[topicSlug].ts",
+    "category": "quiz",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "topicSlug": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Topic Audio Quiz",
+    "method": "GET",
+    "path": "/api/topic/audio-quiz/:topicSlug",
+    "sourceFile": "tarotea-frontend/server/api/topic/audio-quiz/[topicSlug].get.ts",
+    "category": "quiz",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "topicSlug": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Topic Audio Quiz V2",
+    "method": "GET",
+    "path": "/api/topic/audio-quiz/v2/:topicSlug",
+    "sourceFile": "tarotea-frontend/server/api/topic/audio-quiz/v2/[topicSlug].get.ts",
+    "category": "quiz",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "topicSlug": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Sentence Detail",
+    "method": "GET",
+    "path": "/api/sentences/:id",
+    "sourceFile": "tarotea-frontend/server/api/sentences/[id]/index.ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Sentence Topic Content",
+    "method": "GET",
+    "path": "/api/sentences/topics/:id",
+    "sourceFile": "tarotea-frontend/server/api/sentences/topics/[id].ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Index Level Content",
+    "method": "GET",
+    "path": "/api/index/levels/:id",
+    "sourceFile": "tarotea-frontend/server/api/index/levels/[id].ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Index Level Slugs",
+    "method": "GET",
+    "path": "/api/index/levels/:slugs",
+    "sourceFile": "tarotea-frontend/server/api/index/levels/[slugs].get.ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "slugs": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Index Topic Content",
+    "method": "GET",
+    "path": "/api/index/topics/:id",
+    "sourceFile": "tarotea-frontend/server/api/index/topics/[id].ts",
+    "category": "content",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Access Level",
+    "method": "GET",
+    "path": "/api/access/level/:slug",
+    "sourceFile": "tarotea-frontend/server/api/access/level/[slug].get.ts",
+    "category": "access",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "slug": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Access Topic",
+    "method": "GET",
+    "path": "/api/access/topic/:slug",
+    "sourceFile": "tarotea-frontend/server/api/access/topic/[slug].get.ts",
+    "category": "access",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "slug": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Word Unlock Summary",
+    "method": "GET",
+    "path": "/api/word-unlocks",
+    "sourceFile": "tarotea-frontend/server/api/word-unlocks.get.ts",
+    "category": "unlock",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "wordIds": "word-1,word-2"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Unlock Word",
+    "method": "POST",
+    "path": "/api/word-unlocks",
+    "sourceFile": "tarotea-frontend/server/api/word-unlocks.post.ts",
+    "category": "unlock",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "wordId": "word-1"
+    }
+  },
+  {
+    "name": "Word Progress",
+    "method": "GET",
+    "path": "/api/word-progress",
+    "sourceFile": "tarotea-frontend/server/api/word-progress/index.get.ts",
+    "category": "progress",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "wordIds": "word-1,word-2"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Word Progress V2",
+    "method": "GET",
+    "path": "/api/word-progress/v2",
+    "sourceFile": "tarotea-frontend/server/api/word-progress/v2/index.get.ts",
+    "category": "progress",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "wordIds": "word-1,word-2"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Word Progress V3",
+    "method": "GET",
+    "path": "/api/word-progress/v3",
+    "sourceFile": "tarotea-frontend/server/api/word-progress/v3/index.get.ts",
+    "category": "progress",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "wordIds": "word-1,word-2"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Weakest Word Progress V4",
+    "method": "GET",
+    "path": "/api/word-progress/weakestV4",
+    "sourceFile": "tarotea-frontend/server/api/word-progress/weakestV4.ts",
+    "category": "progress",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "topic": "survival-essentials",
+      "limit": 10
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "User Stats",
+    "method": "GET",
+    "path": "/api/user/stats",
+    "sourceFile": "tarotea-frontend/server/api/user/stats/index.get.ts",
+    "category": "stats",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "User Stats V2",
+    "method": "GET",
+    "path": "/api/user/stats/v2",
+    "sourceFile": "tarotea-frontend/server/api/user/stats/v2/index.get.ts",
+    "category": "stats",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Daily Start",
+    "method": "POST",
+    "path": "/api/daily/start",
+    "sourceFile": "tarotea-frontend/server/api/daily/start.post.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "mode": "vocab"
+    }
+  },
+  {
+    "name": "Daily Complete",
+    "method": "POST",
+    "path": "/api/daily/complete",
+    "sourceFile": "tarotea-frontend/server/api/daily/complete.post.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "day": "2026-06-16"
+    }
+  },
+  {
+    "name": "Daily Words",
+    "method": "POST",
+    "path": "/api/daily/words",
+    "sourceFile": "tarotea-frontend/server/api/daily/words.post.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": {
+      "count": 10
+    }
+  },
+  {
+    "name": "Daily Vocab Session V2",
+    "method": "GET",
+    "path": "/api/daily/vocab/v2/session",
+    "sourceFile": "tarotea-frontend/server/api/daily/vocab/v2/session.get.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Daily Vocab Reload V2",
+    "method": "GET",
+    "path": "/api/daily/vocab/v2/reload",
+    "sourceFile": "tarotea-frontend/server/api/daily/vocab/v2/reload.get.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {
+      "sessionId": "session-1"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Daily Vocab Finalize V2",
+    "method": "POST",
+    "path": "/api/daily/vocab/v2/finalize",
+    "sourceFile": "tarotea-frontend/server/api/daily/vocab/v2/finalize.post.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "sessionId": "session-1",
+      "answers": [
+        {
+          "wordId": "word-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Daily Jyutping Stats V2",
+    "method": "GET",
+    "path": "/api/daily/jyutping/v2/stats",
+    "sourceFile": "tarotea-frontend/server/api/daily/jyutping/v2/stats.get.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": false,
+    "safeForLoadTest": true,
+    "exampleParams": {},
+    "exampleBody": null
+  },
+  {
+    "name": "Daily Jyutping Word V2",
+    "method": "GET",
+    "path": "/api/daily/jyutping/v2/words/:id",
+    "sourceFile": "tarotea-frontend/server/api/daily/jyutping/v2/words/[id].get.ts",
+    "category": "daily",
+    "authRequired": false,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "id": "word-1"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Daily Jyutping Start V2",
+    "method": "POST",
+    "path": "/api/daily/jyutping/v2/start",
+    "sourceFile": "tarotea-frontend/server/api/daily/jyutping/v2/start.post.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "wordIds": [
+        "word-1"
+      ]
+    }
+  },
+  {
+    "name": "Daily Jyutping Finalize V2",
+    "method": "POST",
+    "path": "/api/daily/jyutping/v2/finalize",
+    "sourceFile": "tarotea-frontend/server/api/daily/jyutping/v2/finalize.post.ts",
+    "category": "daily",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "wordId": "word-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Daily Jyutping XP Worker V2",
+    "method": "POST",
+    "path": "/api/daily/jyutping/v2/xp-worker",
+    "sourceFile": "tarotea-frontend/server/api/daily/jyutping/v2/xp-worker.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Typing Topic Start V2",
+    "method": "GET",
+    "path": "/api/typing/topic/v2/start-v2",
+    "sourceFile": "tarotea-frontend/server/api/typing/topic/v2/start-v2.get.ts",
+    "category": "typing",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "scope": "topic",
+      "slug": "survival-essentials",
+      "variant": "jyutping"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Typing Topic Finalize V2",
+    "method": "POST",
+    "path": "/api/typing/topic/v2/finalize",
+    "sourceFile": "tarotea-frontend/server/api/typing/topic/v2/finalize.post.ts",
+    "category": "typing",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "wordId": "word-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Typing Topic XP Jyutping Worker V2",
+    "method": "POST",
+    "path": "/api/typing/topic/v2/xp-jyutping",
+    "sourceFile": "tarotea-frontend/server/api/typing/topic/v2/xp-jyutping.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Typing Sentences Start V2",
+    "method": "GET",
+    "path": "/api/typing/sentences/v2/start-v2",
+    "sourceFile": "tarotea-frontend/server/api/typing/sentences/v2/start-v2.get.ts",
+    "category": "typing",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "scope": "level",
+      "slug": "level-one",
+      "variant": "chinese"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Typing Sentences Finalize V2",
+    "method": "POST",
+    "path": "/api/typing/sentences/v2/finalize",
+    "sourceFile": "tarotea-frontend/server/api/typing/sentences/v2/finalize.post.ts",
+    "category": "typing",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "sentenceId": "sentence-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Typing Sentences XP Chinese Worker V2",
+    "method": "POST",
+    "path": "/api/typing/sentences/v2/xp-chinese",
+    "sourceFile": "tarotea-frontend/server/api/typing/sentences/v2/xp-chinese.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Typing Levels Start V2",
+    "method": "GET",
+    "path": "/api/typing/levels/v2/start-v2",
+    "sourceFile": "tarotea-frontend/server/api/typing/levels/v2/start-v2.get.ts",
+    "category": "typing",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "scope": "level",
+      "slug": "level-one",
+      "variant": "jyutping"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Typing Levels Finalize V2",
+    "method": "POST",
+    "path": "/api/typing/levels/v2/finalize",
+    "sourceFile": "tarotea-frontend/server/api/typing/levels/v2/finalize.post.ts",
+    "category": "typing",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "wordId": "word-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Typing Levels XP Jyutping Worker V2",
+    "method": "POST",
+    "path": "/api/typing/levels/v2/xp-jyutping",
+    "sourceFile": "tarotea-frontend/server/api/typing/levels/v2/xp-jyutping.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Sentences Start V3",
+    "method": "GET",
+    "path": "/api/sentences/v3/start-v2",
+    "sourceFile": "tarotea-frontend/server/api/sentences/v3/start-v2.get.ts",
+    "category": "sentences",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "scope": "level",
+      "slug": "level-one"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Sentences Finalize V3",
+    "method": "POST",
+    "path": "/api/sentences/v3/finalize",
+    "sourceFile": "tarotea-frontend/server/api/sentences/v3/finalize.post.ts",
+    "category": "sentences",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "sentenceId": "sentence-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Sentences XP Quiz Worker V3",
+    "method": "POST",
+    "path": "/api/sentences/v3/xp-quiz-sentences",
+    "sourceFile": "tarotea-frontend/server/api/sentences/v3/xp-quiz-sentences.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Sentence Jyutping Finalize",
+    "method": "POST",
+    "path": "/api/sentences/jyutping/finalize",
+    "sourceFile": "tarotea-frontend/server/api/sentences/jyutping/finalize.post.ts",
+    "category": "sentences",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "sentenceId": "sentence-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Sentence Topics Start V3",
+    "method": "GET",
+    "path": "/api/sentences/topics/v3/start-v2",
+    "sourceFile": "tarotea-frontend/server/api/sentences/topics/v3/start-v2.get.ts",
+    "category": "sentences",
+    "authRequired": true,
+    "mutatesData": false,
+    "callsExternalService": true,
+    "safeForLoadTest": true,
+    "exampleParams": {
+      "scope": "topic",
+      "slug": "survival-essentials"
+    },
+    "exampleBody": null
+  },
+  {
+    "name": "Sentence Topics Finalize V3",
+    "method": "POST",
+    "path": "/api/sentences/topics/v3/finalize",
+    "sourceFile": "tarotea-frontend/server/api/sentences/topics/v3/finalize.post.ts",
+    "category": "sentences",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "sentenceId": "sentence-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Sentence Topics XP Quiz Worker V3",
+    "method": "POST",
+    "path": "/api/sentences/topics/v3/xp-quiz-sentences",
+    "sourceFile": "tarotea-frontend/server/api/sentences/topics/v3/xp-quiz-sentences.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  },
+  {
+    "name": "Jyutping Finalize",
+    "method": "POST",
+    "path": "/api/jyutping/finalize",
+    "sourceFile": "tarotea-frontend/server/api/jyutping/finalize.post.ts",
+    "category": "quiz",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "answers": [
+        {
+          "wordId": "word-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Quiz Grind Finalize V5",
+    "method": "POST",
+    "path": "/api/quiz/grind/finalize-v5",
+    "sourceFile": "tarotea-frontend/server/api/quiz/grind/finalize-v5.ts",
+    "category": "quiz",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": true,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "mode": "grind-topic",
+      "answers": [
+        {
+          "wordId": "word-1",
+          "correct": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "Quiz XP Worker V5",
+    "method": "POST",
+    "path": "/api/worker/xp-quiz-v5",
+    "sourceFile": "tarotea-frontend/server/api/worker/xp-quiz-v5.post.ts",
+    "category": "worker",
+    "authRequired": true,
+    "mutatesData": true,
+    "callsExternalService": false,
+    "safeForLoadTest": false,
+    "exampleParams": {},
+    "exampleBody": {
+      "attemptId": "attempt-1",
+      "userId": "auth0|k6-user"
+    }
+  }
+]
