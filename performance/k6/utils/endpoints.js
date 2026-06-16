@@ -119,14 +119,14 @@ export function safeGetEndpoints(endpoints) {
   return endpoints.filter((endpoint) => endpoint.safeForLoadTest === true && endpoint.method === "GET");
 }
 
-export function findEndpoint(endpoints, name) {
+export function findEndpoint(endpoints, name, options = {}) {
   const endpoint = endpoints.find((item) => item.name === name);
 
   if (!endpoint) {
     throw new Error(`Endpoint not found in manifest: ${name}`);
   }
 
-  if (!endpoint.safeForLoadTest) {
+  if (!options.allowUnsafe && !endpoint.safeForLoadTest) {
     throw new Error(`Endpoint is not safe for load testing: ${name}`);
   }
 
@@ -138,7 +138,7 @@ function topicSentenceSlug(value) {
   return slug.endsWith("-sentences") ? slug : `${slug}-sentences`;
 }
 
-function levelSlug(value) {
+export function normalizeLevelSlug(value) {
   const raw = String(value || __ENV.LEVEL_SLUG || __ENV.LEVEL || "level-one");
   const byNumber = {
     "1": "level-one",
@@ -166,7 +166,7 @@ export function renderEndpointPath(endpoint, params = {}) {
   if (endpoint.path === "/api/topic/sentences/:id") {
     values.id = __ENV.TOPIC_SENTENCE_SLUG || topicSentenceSlug(values.id || values.topicSlug);
   } else if (endpoint.path === "/api/sentences/:id") {
-    values.id = levelSlug(values.id || values.slug || values.level);
+    values.id = normalizeLevelSlug(values.id || values.slug || values.level);
   }
 
   const missingPathParams = [];
@@ -223,6 +223,58 @@ export function requestEndpoint(baseUrl, endpoint, params = {}) {
   const url = `${baseUrl}${rendered.path}`;
   const res = http.get(url, {
     headers: authHeaders(),
+    tags: {
+      endpoint: endpoint.name,
+      category: endpoint.category,
+      method: endpoint.method,
+      path: endpoint.path,
+      name: endpoint.name,
+    },
+  });
+  const tags = {
+    endpoint: endpoint.name,
+    category: endpoint.category,
+    method: endpoint.method,
+    path: endpoint.path,
+    status: String(res.status),
+  };
+  const unexpectedStatus = res.status >= 400;
+
+  endpointStatusCount.add(1, tags);
+  endpointUnexpectedStatusRate.add(unexpectedStatus, tags);
+
+  if (LOG_UNEXPECTED_STATUSES && unexpectedStatus && unexpectedStatusLogs < UNEXPECTED_STATUS_LOG_LIMIT) {
+    unexpectedStatusLogs += 1;
+    console.warn(
+      `[unexpected-status] ${endpoint.name} ${endpoint.method} ${rendered.path} -> ${res.status}`,
+    );
+  }
+
+  check(res, {
+    [`${endpoint.name} returned non-5xx`]: (r) => r.status < 500,
+    [`${endpoint.name} returned expected auth status`]: (r) =>
+      endpoint.authRequired ? r.status !== 401 && r.status !== 403 : r.status < 500,
+  });
+
+  return { skipped: false, response: res };
+}
+
+export function postJsonEndpoint(baseUrl, endpoint, body, params = {}) {
+  if (endpoint.authRequired && !hasAuth()) {
+    return { skipped: true, reason: "missing AUTH_TOKEN, AUTH_TOKENS, AUTH_TOKENS_FILE, or SESSION_COOKIE" };
+  }
+
+  const rendered = renderEndpointPath(endpoint, params);
+  if (!rendered.path) {
+    return { skipped: true, reason: rendered.reason };
+  }
+
+  const headers = {
+    ...authHeaders(),
+    "Content-Type": "application/json",
+  };
+  const res = http.post(`${baseUrl}${rendered.path}`, JSON.stringify(body), {
+    headers,
     tags: {
       endpoint: endpoint.name,
       category: endpoint.category,
@@ -338,20 +390,34 @@ export function paramsForEndpoint(endpoint, discoveredParams = {}) {
   const sentenceId = __ENV.SENTENCE_ID || discoveredParams.sentenceId || "";
 
   if (endpoint.path.includes("/api/sentences/:id")) {
-    params.id = levelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+    params.id = normalizeLevelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
   } else if (endpoint.path === "/api/topic/sentences/:id") {
     params.id = __ENV.TOPIC_SENTENCE_SLUG || topicSentenceSlug(discoveredParams.topicSentenceSlug || DEFAULT_PARAMS.topicSlug);
   } else if (endpoint.path === "/api/index/levels/:id") {
-    params.id = levelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+    params.id = normalizeLevelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
   } else if (endpoint.path === "/api/access/level/:slug") {
-    params.slug = levelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+    params.slug = normalizeLevelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+  } else if (endpoint.path === "/api/typing/topic/v2/start-v2") {
+    params.scope = "topic";
+    params.slug = discoveredParams.topicSlug || DEFAULT_PARAMS.topicSlug;
+    params.variant = __ENV.TYPING_VARIANT || "jyutping";
   } else if (endpoint.path === "/api/typing/levels/v2/start-v2") {
     params.scope = "level";
-    params.slug = levelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+    params.slug = normalizeLevelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
     params.variant = __ENV.TYPING_VARIANT || "jyutping";
+  } else if (endpoint.path === "/api/typing/sentences/v2/start-v2") {
+    params.scope = __ENV.TYPING_SENTENCE_SCOPE || "level";
+    params.slug =
+      params.scope === "topic"
+        ? discoveredParams.topicSlug || DEFAULT_PARAMS.topicSlug
+        : normalizeLevelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+    params.variant = __ENV.TYPING_SENTENCE_VARIANT || "chinese";
   } else if (endpoint.path === "/api/sentences/v3/start-v2") {
     params.scope = "level";
-    params.slug = levelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+    params.slug = normalizeLevelSlug(discoveredParams.levelSlug || DEFAULT_PARAMS.level);
+  } else if (endpoint.path === "/api/sentences/topics/v3/start-v2") {
+    params.scope = "topic";
+    params.slug = discoveredParams.topicSlug || DEFAULT_PARAMS.topicSlug;
   } else if (endpoint.path.includes("/words/:id")) {
     params.id = wordId;
   }

@@ -4,6 +4,7 @@ import {
   discoverDefaultParams,
   findEndpoint,
   normalizeBaseUrl,
+  normalizeLevelSlug,
   randomSleep,
   requestEndpoint,
 } from "./utils/endpoints.js";
@@ -12,23 +13,7 @@ const BASE_URL = normalizeBaseUrl(__ENV.BASE_URL);
 const endpoints = JSON.parse(open("./endpoints.json"));
 const TOPIC_SLUG = __ENV.TOPIC_SLUG || "survival-essentials";
 const TOPIC_SENTENCE_SLUG = __ENV.TOPIC_SENTENCE_SLUG || `${TOPIC_SLUG}-sentences`;
-const LEVEL_SLUG = (() => {
-  const raw = __ENV.LEVEL_SLUG || __ENV.LEVEL || "level-one";
-  const byNumber = {
-    "1": "level-one",
-    "2": "level-two",
-    "3": "level-three",
-    "4": "level-four",
-    "5": "level-five",
-    "6": "level-six",
-    "7": "level-seven",
-    "8": "level-eight",
-    "9": "level-nine",
-    "10": "level-ten",
-  };
-
-  return byNumber[raw] || raw;
-})();
+const LEVEL_SLUG = normalizeLevelSlug(__ENV.LEVEL_SLUG || __ENV.LEVEL || "level-one");
 
 const skippedRequests = new Counter("learner_journey_requests_skipped");
 
@@ -136,10 +121,10 @@ export default function (discoveredParams) {
   });
 
   group("authenticated practice starts", () => {
-    get(journey.typingTopicStart, { topicSlug: TOPIC_SLUG });
+    get(journey.typingTopicStart, { scope: "topic", slug: TOPIC_SLUG, variant: "jyutping" });
     get(journey.typingLevelStart, { scope: "level", slug: LEVEL_SLUG, variant: "jyutping" });
     get(journey.sentenceStart, { scope: "level", slug: LEVEL_SLUG });
-    get(journey.sentenceTopicStart, { topicSlug: TOPIC_SLUG });
+    get(journey.sentenceTopicStart, { scope: "topic", slug: TOPIC_SLUG });
     sleep(randomSleep(2, 5));
   });
 }

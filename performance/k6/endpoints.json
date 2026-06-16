@@ -295,7 +295,7 @@
     "authRequired": true,
     "mutatesData": false,
     "callsExternalService": false,
-    "safeForLoadTest": true,
+    "safeForLoadTest": false,
     "exampleParams": {
       "attemptId": "attempt-1"
     },
@@ -372,7 +372,7 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "id": "1"
+      "id": "level-one"
     },
     "exampleBody": null
   },
@@ -387,7 +387,7 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "id": "1"
+      "id": "level-one"
     },
     "exampleBody": null
   },
@@ -537,7 +537,7 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "slugs": "1,2"
+      "slugs": "level-one"
     },
     "exampleBody": null
   },
@@ -672,6 +672,7 @@
     "callsExternalService": false,
     "safeForLoadTest": true,
     "exampleParams": {
+      "topic": "survival-essentials",
       "limit": 10
     },
     "exampleBody": null
@@ -769,7 +770,7 @@
     "authRequired": true,
     "mutatesData": false,
     "callsExternalService": false,
-    "safeForLoadTest": true,
+    "safeForLoadTest": false,
     "exampleParams": {
       "sessionId": "session-1"
     },
@@ -889,7 +890,9 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "topicSlug": "survival-essentials"
+      "scope": "topic",
+      "slug": "survival-essentials",
+      "variant": "jyutping"
     },
     "exampleBody": null
   },
@@ -941,8 +944,9 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "level": "1",
-      "topicSlug": "survival-essentials"
+      "scope": "level",
+      "slug": "level-one",
+      "variant": "chinese"
     },
     "exampleBody": null
   },
@@ -1122,7 +1126,8 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "topicSlug": "survival-essentials"
+      "scope": "topic",
+      "slug": "survival-essentials"
     },
     "exampleBody": null
   },
