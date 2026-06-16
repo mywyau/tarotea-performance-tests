@@ -22,6 +22,7 @@ USER_COUNT=50 APP_BASE_URL=https://www.tarotea.co.uk node auth/generate-test-tok
 Runs only safe `GET` endpoints from the manifest. Authenticated endpoints are skipped unless `AUTH_TOKEN` or `SESSION_COOKIE` is provided.
 If `auth/tokens.json` exists, authenticated endpoints use those generated Auth0 tokens automatically.
 `WORD_ID` and `SENTENCE_ID` are optional; when omitted, the script discovers defaults from `TOPIC_SLUG`.
+`TOPIC_SENTENCE_SLUG` defaults to `${TOPIC_SLUG}-sentences` for `/api/topic/sentences/:id`.
 
 ```sh
 k6 run performance/k6/smoke-safe-get.js \
@@ -33,6 +34,7 @@ k6 run performance/k6/smoke-safe-get.js \
 
 Runs a realistic read-only learner flow: health and public discovery, content browsing, safe quiz starts, dashboard reads, and authenticated practice starts. It does not call finalize, worker, billing, upload, audio generation, destructive, or other unsafe endpoints.
 `WORD_ID` and `SENTENCE_ID` are optional overrides; when omitted, the script discovers defaults from the configured topic.
+`TOPIC_SENTENCE_SLUG` defaults to `${TOPIC_SLUG}-sentences` for the legacy topic sentence-set endpoint.
 
 ```sh
 k6 run performance/k6/learner-journey.js \
@@ -41,4 +43,24 @@ k6 run performance/k6/learner-journey.js \
   -e LEVEL=1
 ```
 
+`LEVEL` can be numeric (`1`, `8`) or you can pass `LEVEL_SLUG` directly (`level-one`, `level-eight`). Level sentence endpoints use the slug form and load CDN files such as `level-eight-sentences.json`.
+
 Use `SESSION_COOKIE` instead of `AUTH_TOKEN` when testing browser-session authenticated paths.
+
+## Diagnosing non-2xx/3xx responses
+
+Both scripts emit endpoint/status metrics:
+
+- `endpoint_status_count`: count of responses tagged by endpoint, category, method, path, and status.
+- `endpoint_unexpected_status_rate`: rate of responses with status `>=400`, tagged the same way.
+
+To print the first unexpected statuses during a run:
+
+```sh
+k6 run performance/k6/learner-journey.js \
+  -e BASE_URL=https://www.tarotea.co.uk \
+  -e TOPIC_SLUG=survival-essentials \
+  -e LOG_UNEXPECTED_STATUSES=true
+```
+
+Use `UNEXPECTED_STATUS_LOG_LIMIT=100` to print more lines.

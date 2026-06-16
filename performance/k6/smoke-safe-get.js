@@ -26,12 +26,17 @@ export const options = {
   thresholds: {
     http_req_failed: ["rate<0.01"],
     http_req_duration: [`p(95)<${Number(__ENV.P95_THRESHOLD_MS || 1500)}`],
+    endpoint_unexpected_status_rate: [`rate<${Number(__ENV.UNEXPECTED_STATUS_RATE_THRESHOLD || 0.01)}`],
   },
   summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
 };
 
 export function setup() {
-  return discoverDefaultParams(BASE_URL, endpoints);
+  const discoveredParams = discoverDefaultParams(BASE_URL, endpoints);
+  return {
+    ...discoveredParams,
+    topicSentenceSlug: __ENV.TOPIC_SENTENCE_SLUG || `${__ENV.TOPIC_SLUG || "survival-essentials"}-sentences`,
+  };
 }
 
 export default function (discoveredParams) {

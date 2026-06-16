@@ -11,7 +11,24 @@ import {
 const BASE_URL = normalizeBaseUrl(__ENV.BASE_URL);
 const endpoints = JSON.parse(open("./endpoints.json"));
 const TOPIC_SLUG = __ENV.TOPIC_SLUG || "survival-essentials";
-const LEVEL = __ENV.LEVEL || "1";
+const TOPIC_SENTENCE_SLUG = __ENV.TOPIC_SENTENCE_SLUG || `${TOPIC_SLUG}-sentences`;
+const LEVEL_SLUG = (() => {
+  const raw = __ENV.LEVEL_SLUG || __ENV.LEVEL || "level-one";
+  const byNumber = {
+    "1": "level-one",
+    "2": "level-two",
+    "3": "level-three",
+    "4": "level-four",
+    "5": "level-five",
+    "6": "level-six",
+    "7": "level-seven",
+    "8": "level-eight",
+    "9": "level-nine",
+    "10": "level-ten",
+  };
+
+  return byNumber[raw] || raw;
+})();
 
 const skippedRequests = new Counter("learner_journey_requests_skipped");
 
@@ -55,6 +72,7 @@ export const options = {
   thresholds: {
     http_req_failed: ["rate<0.02"],
     http_req_duration: [`p(95)<${Number(__ENV.P95_THRESHOLD_MS || 1800)}`],
+    endpoint_unexpected_status_rate: [`rate<${Number(__ENV.UNEXPECTED_STATUS_RATE_THRESHOLD || 0.02)}`],
   },
   summaryTrendStats: ["avg", "min", "med", "max", "p(90)", "p(95)", "p(99)"],
 };
@@ -74,12 +92,14 @@ function get(endpoint, params = {}) {
 }
 
 export function setup() {
-  return discoverDefaultParams(BASE_URL, endpoints, { topicSlug: TOPIC_SLUG });
+  return discoverDefaultParams(BASE_URL, endpoints, {
+    topicSlug: TOPIC_SLUG,
+    topicSentenceSlug: TOPIC_SENTENCE_SLUG,
+  });
 }
 
 export default function (discoveredParams) {
   const wordId = __ENV.WORD_ID || discoveredParams?.wordId || "";
-  const sentenceId = __ENV.SENTENCE_ID || discoveredParams?.sentenceId || "";
 
   group("landing and public discovery", () => {
     get(journey.health);
@@ -90,10 +110,10 @@ export default function (discoveredParams) {
 
   group("browse topic and level content", () => {
     get(journey.topicContent, { id: TOPIC_SLUG });
-    get(journey.topicSentences, { id: TOPIC_SLUG });
-    get(journey.levelContent, { id: LEVEL });
+    get(journey.topicSentences, { id: TOPIC_SENTENCE_SLUG });
+    get(journey.levelContent, { id: LEVEL_SLUG });
     get(journey.wordDetail, { id: wordId });
-    get(journey.sentenceDetail, { id: sentenceId });
+    get(journey.sentenceDetail, { id: LEVEL_SLUG });
     sleep(randomSleep(1, 3));
   });
 
@@ -107,7 +127,7 @@ export default function (discoveredParams) {
   group("authenticated learner dashboard", () => {
     get(journey.me);
     get(journey.accessTopic, { slug: TOPIC_SLUG });
-    get(journey.accessLevel, { slug: LEVEL });
+    get(journey.accessLevel, { slug: LEVEL_SLUG });
     get(journey.wordUnlocks, { wordIds: wordId });
     get(journey.wordProgressV3, { wordIds: wordId });
     get(journey.userStatsV2);
@@ -117,8 +137,8 @@ export default function (discoveredParams) {
 
   group("authenticated practice starts", () => {
     get(journey.typingTopicStart, { topicSlug: TOPIC_SLUG });
-    get(journey.typingLevelStart, { level: LEVEL });
-    get(journey.sentenceStart, { level: LEVEL });
+    get(journey.typingLevelStart, { scope: "level", slug: LEVEL_SLUG, variant: "jyutping" });
+    get(journey.sentenceStart, { scope: "level", slug: LEVEL_SLUG });
     get(journey.sentenceTopicStart, { topicSlug: TOPIC_SLUG });
     sleep(randomSleep(2, 5));
   });

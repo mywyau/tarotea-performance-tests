@@ -417,7 +417,7 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "id": "survival-essentials"
+      "id": "survival-essentials-sentences"
     },
     "exampleBody": null
   },
@@ -492,7 +492,7 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "id": "sentence-1"
+      "id": "level-one"
     },
     "exampleBody": null
   },
@@ -522,7 +522,7 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "id": "1"
+      "id": "level-one"
     },
     "exampleBody": null
   },
@@ -567,7 +567,7 @@
     "callsExternalService": false,
     "safeForLoadTest": true,
     "exampleParams": {
-      "slug": "1"
+      "slug": "level-one"
     },
     "exampleBody": null
   },
@@ -994,7 +994,9 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "level": "1"
+      "scope": "level",
+      "slug": "level-one",
+      "variant": "jyutping"
     },
     "exampleBody": null
   },
@@ -1046,7 +1048,8 @@
     "callsExternalService": true,
     "safeForLoadTest": true,
     "exampleParams": {
-      "level": "1"
+      "scope": "level",
+      "slug": "level-one"
     },
     "exampleBody": null
   },
