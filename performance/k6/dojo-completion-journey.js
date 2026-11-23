@@ -7,6 +7,7 @@ import {
   postJsonEndpoint,
   randomSleep,
   requestEndpoint,
+  requireLearnerToken,
 } from "./utils/endpoints.js";
 
 const BASE_URL = normalizeBaseUrl(__ENV.BASE_URL);
@@ -55,6 +56,8 @@ export const options = {
     },
   },
   thresholds: {
+    dojo_completion_requests_skipped: ["count==0"],
+    dojo_completion_completed: ["count>0"],
     http_req_failed: ["rate<0.03"],
     http_req_duration: [`p(95)<${Number(__ENV.P95_THRESHOLD_MS || 2000)}`],
     endpoint_unexpected_status_rate: [`rate<${Number(__ENV.UNEXPECTED_STATUS_RATE_THRESHOLD || 0.03)}`],
@@ -220,6 +223,10 @@ const flows = {
     params: { scope: "level", slug: LEVEL_SLUG, variant: "chinese" },
   }),
 };
+
+export function setup() {
+  requireLearnerToken();
+}
 
 export default function () {
   for (const flow of ENABLED_FLOWS) {

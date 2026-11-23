@@ -7,6 +7,7 @@ import {
   postJsonEndpoint,
   randomSleep,
   requestEndpoint,
+  requireLearnerToken,
 } from "./utils/endpoints.js";
 
 const BASE_URL = normalizeBaseUrl(__ENV.BASE_URL);
@@ -61,6 +62,8 @@ export const options = {
     },
   },
   thresholds: {
+    quiz_completion_requests_skipped: ["count==0"],
+    quiz_completion_completed: ["count>0"],
     http_req_failed: ["rate<0.03"],
     http_req_duration: [`p(95)<${Number(__ENV.P95_THRESHOLD_MS || 2000)}`],
     endpoint_unexpected_status_rate: [`rate<${Number(__ENV.UNEXPECTED_STATUS_RATE_THRESHOLD || 0.03)}`],
@@ -195,6 +198,7 @@ function runSentenceQuiz(startEndpoint, finalizeEndpoint, startParams, quizTag) 
 }
 
 export function setup() {
+  requireLearnerToken();
   return discoverDefaultParams(BASE_URL, endpoints, { topicSlug: TOPIC_SLUG });
 }
 

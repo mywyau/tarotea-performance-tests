@@ -5,8 +5,29 @@ These tests use `endpoints.json` as the source of truth and skip endpoints where
 Run commands from the repo root:
 
 ```sh
-cd /Users/michaelyau/tarotea/tarotea-performance-tests
+cd /Users/michael.yau/tarotea/tarotea-performance-tests
 ```
+
+Production runs require explicit approval. Before a baseline, copy
+`reports/baseline-template.md` to a dated report and record the deployment,
+provider dashboards, and stop conditions there.
+
+## Post-deploy release gate
+
+After an approved production deployment, run the read-only smoke and cache
+isolation checks together:
+
+```sh
+APPROVE_READ_ONLY_SMOKE=yes \
+BASE_URL=https://www.tarotea.co.uk \
+./scripts/post-deploy-smoke.sh
+```
+
+The script requires the explicit approval flag, uses one virtual user, stops on
+the first failed gate, and writes dated summaries under `reports/`. Add
+`RUN_AUTH_CHECK=yes` to include the authenticated boundary when valid generated
+test tokens are available. It never runs completion journeys or writes learner
+progress.
 
 ## Auth tokens
 
@@ -115,6 +136,19 @@ k6 cloud run performance/k6/learner-journey.js \
 ```
 
 `LEVEL` can be numeric (`1`, `8`) or `LEVEL_SLUG` can be passed directly (`level-one`, `level-eight`).
+
+## Cache Boundary Check
+
+Low-volume post-deploy check for cache isolation. It verifies the cookie-aware HTML shell forbids shared caching, deterministic content permits bounded shared caching, quiz and user responses remain private/no-store, and missing content is not publicly cached.
+
+```sh
+k6 run performance/k6/cache-boundary-check.js \
+  -e BASE_URL=https://www.tarotea.co.uk \
+  -e TOPIC_SLUG=survival-essentials \
+  -e LEVEL_SLUG=level-one
+```
+
+Add `AUTH_TOKEN`, `AUTH_TOKENS`, or `AUTH_TOKENS_FILE` to include the authenticated user boundary. This script makes only one request per boundary and does not mutate application data.
 
 ## Auth Flow Check
 
@@ -255,3 +289,54 @@ The main custom metrics are:
 - `endpoint_status_count`: responses tagged by endpoint, category, method, path, and status.
 - `endpoint_unexpected_status_rate`: responses with status `>=400`.
 - `auth_flow_unexpected_status_rate`: auth check responses outside expected statuses.
+
+## Guest and signed-in baselines
+
+Select `LEARNER_MODE=guest` for anonymous traffic, including when token files
+exist. Use `LEARNER_MODE=signed-in` with dedicated bearer tokens to include the
+dashboard. The read journey visits Word of the Day, the learner count, public
+content and guest-accessible quiz and typing starts. Set
+`DAILY_PRACTICE_ENABLED=true` only when testing a deployment with daily practice
+enabled. The existing rapid quiz and dojo completion loops remain stress tests.
+
+## Practice capacity and XP correctness (staging)
+
+Run against a staging deployment with its own DB, Redis, Auth0 test accounts
+and QStash workers pointing back to staging. The two new scripts also accept a
+local test server. Start with one learner. The capacity script requires an
+explicit guest or signed-in mode. Signed-in capacity runs need one token per
+allocated VU from distinct dedicated accounts. The retry check needs one
+exclusive learner whose progress is not touched by another run.
+
+    k6 run -e BASE_URL="$STAGING_URL" -e LEARNER_MODE=guest -e TARGET_VUS=1 performance/k6/practice-capacity.js
+    k6 run -e BASE_URL="$STAGING_URL" -e LEARNER_MODE=signed-in -e AUTH_TOKENS_FILE="$TEST_TOKENS_FILE" -e TARGET_VUS=1 performance/k6/practice-capacity.js
+    k6 run -e BASE_URL="$STAGING_URL" -e AUTH_TOKENS_FILE="$TEST_TOKENS_FILE" performance/k6/xp-retry-check.js
+
+The paced profile ramps to TARGET_VUS over RAMP_UP (10m), then holds for
+STEADY_STATE (20m). It alternates topic vocabulary quizzes and Chinese typing,
+waits SESSION_SECONDS (600 by default, with ±20% variation), and saves once for
+signed-in learners. Guest completion is local. It models the practice API
+workload; audio CDN throughput and browser rendering are measured separately.
+
+For a coordinated class, use PROFILE=burst, STARTS_PER_SECOND and BURST_SECONDS.
+For example, 50 starts/second for 60 seconds with SESSION_SECONDS=600 targets
+3,000 overlapping sessions followed by a corresponding minute of finishes.
+Each arrival is one session, with no per-question API calls. The driver must
+have capacity for the allocated VUs. A dropped iteration fails the burst.
+Start small (e.g. 1 start/s for 2 seconds), then increase in measured stages.
+At 3,000 steady concurrent learners, ten-minute sessions imply roughly five
+starts and five completions per second.
+
+Both profiles emit practice_started, practice_completed, practice_success,
+practice_start_ms and (signed-in) practice_save_ms. Initial targets are
+p95 start under 1s, p95 save under 1.5s, and failure rates below 1%.
+Capture DB pool wait and queue age from provider/application telemetry.
+Record Redis commands per exercise using the stage template in
+`reports/baseline-template.md`; k6 does not have provider dashboard access.
+
+The separate one-iteration retry check sends the same vocabulary attempt twice,
+requires a deduplicated acknowledgement, then reads the learner's word progress
+until exactly one expected XP and streak increment appears. It checks stability
+for XP_OBSERVE_SECONDS (10 by default), with XP_WAIT_SECONDS (60) to see the
+first award. This is a bounded end-to-end check, not a proof for all future
+deliveries. Save results with `--summary-export=reports/<run-id>.json`.

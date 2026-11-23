@@ -1,6 +1,7 @@
 import { check } from "k6";
 import { SharedArray } from "k6/data";
 import http from "k6/http";
+import exec from "k6/execution";
 import { Counter, Rate } from "k6/metrics";
 
 export const endpointStatusCount = new Counter("endpoint_status_count");
@@ -18,7 +19,7 @@ const TOKEN_FILES = __ENV.AUTH_TOKENS_FILE
       "auth/tokens.json",
     ];
 const fileTokens = new SharedArray("auth tokens", function () {
-  if (__ENV.AUTH_TOKEN || __ENV.AUTH_TOKENS || __ENV.SESSION_COOKIE) {
+  if (__ENV.LEARNER_MODE === "guest" || __ENV.AUTH_TOKEN || __ENV.AUTH_TOKENS || __ENV.SESSION_COOKIE) {
     return [];
   }
 
@@ -42,11 +43,27 @@ const envTokens = (__ENV.AUTH_TOKENS || "")
   .map((token) => token.trim())
   .filter(Boolean);
 
+let fixedLearner = false;
+
+// Set in a VU before its first request; one test account owns its whole session.
+export function bindLearnerToVu() {
+  fixedLearner = true;
+}
+
+export function requireLearnerPool(size) {
+  requireLearnerToken();
+  const tokens = __ENV.AUTH_TOKEN ? [__ENV.AUTH_TOKEN] : envTokens.length ? envTokens : fileTokens;
+  if (tokens.length < size || new Set(Array.from(tokens)).size !== tokens.length) {
+    throw new Error(`Provide a separate bearer token for each of the ${size} virtual learners.`);
+  }
+}
+
 function tokenIndex(length) {
   if (!length) {
     return 0;
   }
 
+  if (fixedLearner) return exec.vu.idInTest - 1;
   const vu = typeof __VU === "number" ? __VU : 0;
   const iter = typeof __ITER === "number" ? __ITER : 0;
   return (vu + iter) % length;
@@ -78,6 +95,7 @@ export function normalizeBaseUrl(value) {
 }
 
 export function getAuthToken() {
+  if (__ENV.LEARNER_MODE === "guest") return "";
   if (__ENV.AUTH_TOKEN) {
     return __ENV.AUTH_TOKEN;
   }
@@ -104,7 +122,7 @@ export function authHeaders() {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  if (__ENV.SESSION_COOKIE) {
+  if (__ENV.SESSION_COOKIE && __ENV.LEARNER_MODE !== "guest") {
     headers.Cookie = __ENV.SESSION_COOKIE;
   }
 
@@ -112,11 +130,20 @@ export function authHeaders() {
 }
 
 export function hasAuth() {
-  return Boolean(getAuthToken() || __ENV.SESSION_COOKIE);
+  return __ENV.LEARNER_MODE !== "guest" && Boolean(getAuthToken() || __ENV.SESSION_COOKIE);
+}
+
+export function requireLearnerToken() {
+  if (!getAuthToken()) throw new Error("This scenario requires a dedicated learner bearer token.");
+}
+
+export function dailyPracticeEnabled() {
+  return __ENV.DAILY_PRACTICE_ENABLED === "true";
 }
 
 export function safeGetEndpoints(endpoints) {
-  return endpoints.filter((endpoint) => endpoint.safeForLoadTest === true && endpoint.method === "GET");
+  return endpoints.filter((endpoint) => endpoint.safeForLoadTest === true && endpoint.method === "GET"
+    && (endpoint.category !== "daily" || dailyPracticeEnabled()));
 }
 
 export function findEndpoint(endpoints, name, options = {}) {
@@ -238,7 +265,7 @@ export function requestEndpoint(baseUrl, endpoint, params = {}) {
     path: endpoint.path,
     status: String(res.status),
   };
-  const unexpectedStatus = res.status >= 400;
+  const unexpectedStatus = res.status === 0 || res.status >= 400;
 
   endpointStatusCount.add(1, tags);
   endpointUnexpectedStatusRate.add(unexpectedStatus, tags);
@@ -290,7 +317,7 @@ export function postJsonEndpoint(baseUrl, endpoint, body, params = {}) {
     path: endpoint.path,
     status: String(res.status),
   };
-  const unexpectedStatus = res.status >= 400;
+  const unexpectedStatus = res.status === 0 || res.status >= 400;
 
   endpointStatusCount.add(1, tags);
   endpointUnexpectedStatusRate.add(unexpectedStatus, tags);

@@ -1,7 +1,10 @@
 import { group, sleep } from "k6";
 import { Counter } from "k6/metrics";
 import {
+  dailyPracticeEnabled,
   discoverDefaultParams,
+  hasAuth,
+  requireLearnerToken,
   findEndpoint,
   normalizeBaseUrl,
   normalizeLevelSlug,
@@ -18,8 +21,7 @@ const LEVEL_SLUG = normalizeLevelSlug(__ENV.LEVEL_SLUG || __ENV.LEVEL || "level-
 const skippedRequests = new Counter("learner_journey_requests_skipped");
 
 const journey = {
-  health: findEndpoint(endpoints, "Health Check"),
-  currentUsers: findEndpoint(endpoints, "Current Users Count"),
+  featuredWord: findEndpoint(endpoints, "Word of the Day"),
   totalStats: findEndpoint(endpoints, "Total User Stats"),
   topicContent: findEndpoint(endpoints, "Topic Content"),
   topicQuiz: findEndpoint(endpoints, "Topic Word Quiz V2"),
@@ -36,6 +38,7 @@ const journey = {
   userStatsV2: findEndpoint(endpoints, "User Stats V2"),
   dailyJyutpingStats: findEndpoint(endpoints, "Daily Jyutping Stats V2"),
   typingTopicStart: findEndpoint(endpoints, "Typing Topic Start V2"),
+  typingSentenceStart: findEndpoint(endpoints, "Typing Sentences Start V2"),
   typingLevelStart: findEndpoint(endpoints, "Typing Levels Start V2"),
   sentenceStart: findEndpoint(endpoints, "Sentences Start V3"),
   sentenceTopicStart: findEndpoint(endpoints, "Sentence Topics Start V3"),
@@ -55,6 +58,7 @@ export const options = {
     },
   },
   thresholds: {
+    learner_journey_requests_skipped: ["count==0"],
     http_req_failed: ["rate<0.02"],
     http_req_duration: [`p(95)<${Number(__ENV.P95_THRESHOLD_MS || 1800)}`],
     endpoint_unexpected_status_rate: [`rate<${Number(__ENV.UNEXPECTED_STATUS_RATE_THRESHOLD || 0.02)}`],
@@ -77,6 +81,10 @@ function get(endpoint, params = {}) {
 }
 
 export function setup() {
+  if (__ENV.LEARNER_MODE && !["guest", "signed-in"].includes(__ENV.LEARNER_MODE)) {
+    throw new Error("LEARNER_MODE must be guest or signed-in");
+  }
+  if (__ENV.LEARNER_MODE === "signed-in" || hasAuth()) requireLearnerToken();
   return discoverDefaultParams(BASE_URL, endpoints, {
     topicSlug: TOPIC_SLUG,
     topicSentenceSlug: TOPIC_SENTENCE_SLUG,
@@ -87,8 +95,7 @@ export default function (discoveredParams) {
   const wordId = __ENV.WORD_ID || discoveredParams?.wordId || "";
 
   group("landing and public discovery", () => {
-    get(journey.health);
-    get(journey.currentUsers);
+    get(journey.featuredWord);
     get(journey.totalStats);
     sleep(randomSleep(0.2, 0.8));
   });
@@ -109,20 +116,21 @@ export default function (discoveredParams) {
     sleep(randomSleep(1, 2));
   });
 
-  group("authenticated learner dashboard", () => {
+  if (hasAuth()) group("authenticated learner dashboard", () => {
     get(journey.me);
     get(journey.accessTopic, { slug: TOPIC_SLUG });
     get(journey.accessLevel, { slug: LEVEL_SLUG });
     get(journey.wordUnlocks, { wordIds: wordId });
     get(journey.wordProgressV3, { wordIds: wordId });
     get(journey.userStatsV2);
-    get(journey.dailyJyutpingStats);
+    if (dailyPracticeEnabled()) get(journey.dailyJyutpingStats);
     sleep(randomSleep(1, 3));
   });
 
-  group("authenticated practice starts", () => {
+  group("practice starts", () => {
     get(journey.typingTopicStart, { scope: "topic", slug: TOPIC_SLUG, variant: "jyutping" });
     get(journey.typingLevelStart, { scope: "level", slug: LEVEL_SLUG, variant: "jyutping" });
+    get(journey.typingSentenceStart, { scope: "level", slug: LEVEL_SLUG, variant: "chinese" });
     get(journey.sentenceStart, { scope: "level", slug: LEVEL_SLUG });
     get(journey.sentenceTopicStart, { scope: "topic", slug: TOPIC_SLUG });
     sleep(randomSleep(2, 5));

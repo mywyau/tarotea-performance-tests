@@ -3,6 +3,7 @@ import http from "k6/http";
 import { Counter, Rate } from "k6/metrics";
 import {
   authHeaders,
+  dailyPracticeEnabled,
   getAuthToken,
   hasAuth,
   normalizeBaseUrl,
@@ -145,6 +146,7 @@ export default function () {
       "ai usage has numeric remaining": (value) => Number.isFinite(Number(value.aiUsageBody?.remaining)),
     });
 
+    if (!dailyPracticeEnabled()) return;
     const dailyStats = request("GET", "/api/daily/jyutping/v2/stats", {
       endpoint: "Daily Jyutping Stats V2",
       authCase: "valid",
